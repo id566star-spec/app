@@ -153,6 +153,11 @@
       line-height: 1.7;
     }
 
+    #calendarQuote {
+      margin-bottom: 16px;
+      color: #ffe0c6;
+    }
+
     .habit-item {
       display: flex;
       align-items: center;
@@ -267,12 +272,25 @@
       box-shadow: inset 0 0 0 1px rgba(255, 159, 102, 0.10);
     }
 
+    .no-record {
+      opacity: 0.72;
+    }
+
+    .no-record .day-emoji {
+      filter: grayscale(0.2);
+      opacity: 0.75;
+    }
+
     .record-dot {
       width: 7px;
       height: 7px;
       border-radius: 50%;
       background: #ffb07b;
       margin-top: 4px;
+    }
+
+    .empty-dot {
+      background: rgba(255,255,255,0.18);
     }
 
     .chart-card {
@@ -383,6 +401,12 @@
 
     <div class="hidden" id="mainPage">
       <div class="card">
+        <div class="section-title">月曆檢視</div>
+        <div class="quote" id="calendarQuote">今天也要溫柔地陪自己走一段路 ✨</div>
+        <div id="historyWrap"></div>
+      </div>
+
+      <div class="card">
         <div class="section-title">今日打卡</div>
         <div class="quote" id="helloText"></div>
         <div id="todayStatusHint" class="hint"></div>
@@ -421,11 +445,6 @@
       </div>
 
       <div class="card">
-        <div class="section-title">月曆檢視</div>
-        <div id="historyWrap"></div>
-      </div>
-
-      <div class="card">
         <div class="section-title">成果統計</div>
         <div id="statsWrap"></div>
       </div>
@@ -453,6 +472,14 @@
       "你願意回來照顧自己，已經很棒了。"
     ];
 
+    const calendarQuotes = [
+      "今天也要溫柔地陪自己走一段路 ✨",
+      "你每一次打卡，都是在照顧未來的自己 🌱",
+      "慢慢來也沒關係，持續就是很厲害的事 💛",
+      "有做到的日子值得開心，沒做到的日子也值得被理解 🌷",
+      "你不是在追趕誰，你是在好好成為自己 ☀️"
+    ];
+
     const habitList = [
       "早起 10 分鐘",
       "喝足夠的水",
@@ -473,6 +500,7 @@
     const loginPage = document.getElementById("loginPage");
     const helloText = document.getElementById("helloText");
     const quoteText = document.getElementById("quoteText");
+    const calendarQuote = document.getElementById("calendarQuote");
     const habitsBox = document.getElementById("habitsBox");
     const todayStatusHint = document.getElementById("todayStatusHint");
 
@@ -499,6 +527,7 @@
     let editingRecord = null;
 
     quoteText.textContent = quotes[Math.floor(Math.random() * quotes.length)];
+    calendarQuote.textContent = calendarQuotes[Math.floor(Math.random() * calendarQuotes.length)];
 
     function formatDateToYMD(date) {
       const y = date.getFullYear();
@@ -821,10 +850,10 @@
     }
 
     function getEmojiByScore(score) {
-      if (score >= 6) return "😊";
+      if (score >= 6) return "😄";
       if (score >= 4) return "🙂";
-      if (score >= 1) return "😶";
-      return "";
+      if (score >= 1) return "😌";
+      return "🌙";
     }
 
     function loadRecordToForm(row) {
@@ -882,18 +911,19 @@
         const item = map[dateStr];
         const hasRecord = !!item;
         const score = hasRecord ? item.score : 0;
-        const emoji = hasRecord ? getEmojiByScore(score) : "";
+        const emoji = hasRecord ? getEmojiByScore(score) : "🫥";
         const classes = ["day-cell"];
 
         if (dateStr === today) classes.push("today-mark");
         if (hasRecord) classes.push("has-record");
+        else classes.push("no-record");
 
         html += `
           <div class="${classes.join(" ")}" ${hasRecord ? `data-date="${dateStr}"` : ""}>
             <div class="day-num">${day}</div>
-            <div class="day-emoji">${hasRecord ? emoji : ""}</div>
-            <div class="day-score">${hasRecord ? `${score}/7` : ""}</div>
-            ${hasRecord ? `<div class="record-dot"></div>` : ""}
+            <div class="day-emoji">${emoji}</div>
+            <div class="day-score">${hasRecord ? `${score}/7` : "未打卡"}</div>
+            ${hasRecord ? `<div class="record-dot"></div>` : `<div class="record-dot empty-dot"></div>`}
           </div>
         `;
       }
