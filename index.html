@@ -1150,44 +1150,48 @@
     }
 
     function updateTodayStatus() {
-      if (editingRecord) {
-        todayStatusHint.textContent = `目前正在編輯 ${editingRecord.date} 的紀錄，修改後按「完成今日打卡」即可儲存。`;
-        checkinBtn.disabled = false;
-        return;
-      }
+  const today = getTodayStr();
 
-      if (todayExistingRecord) {
-        todayStatusHint.textContent = `今天已打卡，今日分數：${todayExistingRecord.score}/7。若要修改，請點 Day 卡片進行編輯。`;
-        checkinBtn.disabled = true;
-      } else {
-        todayStatusHint.textContent = "今天還沒打卡，完成後會立即顯示在挑戰日曆上。";
-        checkinBtn.disabled = false;
-      }
+  if (editingRecord) {
+    todayStatusHint.textContent = `目前正在編輯 ${editingRecord.date} 的紀錄，修改後按「完成今日打卡」即可儲存。`;
+    checkinBtn.disabled = false;
+    return;
+  }
+
+  if (todayExistingRecord && normalizeDateString(todayExistingRecord.date) === today) {
+    todayStatusHint.textContent = `今天已經打卡完成，請到上方挑戰日曆點今天的 Day 卡片進行編輯。`;
+    checkinBtn.disabled = true;
+  } else {
+    todayStatusHint.textContent = "今天還沒打卡，完成後會立即顯示在挑戰日曆上。";
+    checkinBtn.disabled = false;
+  }
+}
+
+async function refreshAllViews() {
+  currentRows = await fetchHistoryData();
+  setChallengeStartDateFromRows(currentRows);
+
+  const today = getTodayStr();
+
+  // 用標準化日期找今天紀錄
+  todayExistingRecord = currentRows.find(r => normalizeDateString(r.date) === today) || null;
+
+  if (!editingRecord) {
+    if (todayExistingRecord) {
+      fillFormWithRecord(todayExistingRecord);
+    } else {
+      clearTodayForm();
     }
+  }
 
-    async function refreshAllViews() {
-      currentRows = await fetchHistoryData();
-      setChallengeStartDateFromRows(currentRows);
-
-      const today = getTodayStr();
-      todayExistingRecord = currentRows.find(r => String(r.date).trim() === today) || null;
-
-      if (!editingRecord) {
-        if (todayExistingRecord) {
-          fillFormWithRecord(todayExistingRecord);
-        } else {
-          clearTodayForm();
-        }
-      }
-
-      updateHeaderUI();
-      updateHero(currentRows);
-      updateTodayStatus();
-      renderChallengeCalendar(currentRows);
-      renderStats(currentRows);
-      renderBadges(currentRows);
-      await renderLeaderboard();
-    }
+  updateHeaderUI();
+  updateHero(currentRows);
+  updateTodayStatus();
+  renderChallengeCalendar(currentRows);
+  renderStats(currentRows);
+  renderBadges(currentRows);
+  await renderLeaderboard();
+}
 
     async function enterMainPage() {
       loginPage.classList.add("hidden");
@@ -1336,16 +1340,20 @@
       showMessage(checkinMsg, `已載入 ${row.date} 的舊紀錄，可以直接修改。`);
     }
 
-   function renderChallengeCalendar(rows) {
+function renderChallengeCalendar(rows) {
   const startDate = getChallengeStartDate();
   const today = getTodayStr();
   const todayIndex = diffDays(startDate, today) + 1;
 
   const dayMap = {};
   rows.forEach(item => {
-    const dayIndex = diffDays(startDate, item.date) + 1;
+    const normalized = normalizeDateString(item.date);
+    const dayIndex = diffDays(startDate, normalized) + 1;
     if (dayIndex >= 1 && dayIndex <= 30) {
-      dayMap[dayIndex] = item;
+      dayMap[dayIndex] = {
+        ...item,
+        date: normalized
+      };
     }
   });
 
@@ -1363,23 +1371,20 @@
     let clickable = false;
 
     if (item) {
-      // 已打卡
       classes.push("done");
-      icon = "✅";
+      if (isToday) classes.push("today");
+      icon = "🌟";
       sub = `已打卡 ${item.score}/7`;
       clickable = true;
     } else if (isToday) {
-      // 今天但尚未打卡
       classes.push("pending", "today");
       icon = "🫥";
       sub = "未打卡";
     } else if (isPast) {
-      // 過去但沒打卡
       classes.push("pending");
       icon = "⭕";
       sub = "未完成";
     } else if (isFuture) {
-      // 未來日期
       classes.push("future");
       icon = "🔒";
       sub = "未解鎖";
@@ -1402,7 +1407,9 @@
     tile.addEventListener("click", () => {
       const dayNum = Number(tile.getAttribute("data-day"));
       const row = dayMap[dayNum];
-      if (row) showDetail(row, dayNum);
+      if (row) {
+        showDetail(row, dayNum);
+      }
     });
   });
 }
