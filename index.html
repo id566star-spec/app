@@ -139,6 +139,7 @@
       min-height: 22px;
       color: #ffd4ba;
       line-height: 1.6;
+      white-space: pre-wrap;
     }
 
     .hidden {
@@ -216,7 +217,7 @@
     }
 
     .day-cell {
-      min-height: 68px;
+      min-height: 74px;
       border-radius: 14px;
       background: rgba(255,255,255,0.08);
       padding: 6px 3px;
@@ -259,6 +260,7 @@
       font-size: 11px;
       margin-top: 4px;
       color: #ffd5b2;
+      line-height: 1.2;
     }
 
     .today-mark {
@@ -273,12 +275,11 @@
     }
 
     .no-record {
-      opacity: 0.72;
+      opacity: 0.78;
     }
 
     .no-record .day-emoji {
-      filter: grayscale(0.2);
-      opacity: 0.75;
+      opacity: 0.78;
     }
 
     .record-dot {
@@ -462,7 +463,7 @@
   </div>
 
   <script>
-    const API = "https://script.google.com/macros/s/AKfycbx4mEsUFeBq2XwWQurV6MV7ggMFzMiO0XSZq3tb_21GHmvGo0Syjfl0u58xv-SDTTSK/exec";
+    const API = "https://script.google.com/macros/s/AKfycbyz6UiP_YVZeugH8bFjUF7TnE6iEQswhEwINjZXrkj_y_whh36_I-Y5OORJnz57r0UB/exec";
 
     const quotes = [
       "不要小心計算如何，先把今天挺住就夠好了。",
@@ -610,9 +611,9 @@
 
     function normalizeHistoryRows(rows) {
       return rows.map(row => ({
-        id: String(row[0] || ""),
-        user_id: String(row[1] || ""),
-        date: String(row[2] || ""),
+        id: String(row[0] || "").trim(),
+        user_id: String(row[1] || "").trim(),
+        date: String(row[2] || "").trim(),
         habits: [row[3], row[4], row[5], row[6], row[7], row[8], row[9]].map(v => {
           return v === true || v === "TRUE" || v === "true";
         }),
@@ -785,11 +786,7 @@
         });
 
         if (data.status === "success") {
-          if (data.mode === "updated") {
-            showMessage(checkinMsg, `今天已有紀錄，系統已幫你更新為 ${data.score}/7 ✨`);
-          } else {
-            showMessage(checkinMsg, `今日打卡成功，得分 ${data.score}/7 ✨`);
-          }
+          showMessage(checkinMsg, `今日打卡成功，得分 ${data.score}/7 ✨`);
           editingRecord = null;
           await refreshAllViews();
         } else {
@@ -850,19 +847,16 @@
     }
 
     function getEmojiByScore(score) {
-      if (score >= 6) return "😄";
-      if (score >= 4) return "🙂";
+      if (score >= 7) return "🥳";
+      if (score >= 5) return "😄";
+      if (score >= 3) return "🙂";
       if (score >= 1) return "😌";
       return "🌙";
     }
 
     function loadRecordToForm(row) {
       editingRecord = row;
-      renderHabits(row.habits || []);
-      reviewGood.value = row.review_good || "";
-      reviewBad.value = row.review_bad || "";
-      reviewBetter.value = row.review_better || "";
-
+      fillFormWithRecord(row);
       checkinBtn.disabled = false;
       todayStatusHint.textContent = `目前正在編輯 ${row.date} 的紀錄，修改後按「完成今日打卡」即可儲存。`;
 
@@ -887,7 +881,7 @@
       const map = {};
       rows.forEach(item => {
         if (item.date) {
-          map[item.date] = item;
+          map[item.date.trim()] = item;
         }
       });
 
@@ -910,7 +904,7 @@
         const dateStr = formatDateToYMD(new Date(year, month, day));
         const item = map[dateStr];
         const hasRecord = !!item;
-        const score = hasRecord ? item.score : 0;
+        const score = hasRecord ? Number(item.score || 0) : 0;
         const emoji = hasRecord ? getEmojiByScore(score) : "🫥";
         const classes = ["day-cell"];
 
@@ -922,7 +916,7 @@
           <div class="${classes.join(" ")}" ${hasRecord ? `data-date="${dateStr}"` : ""}>
             <div class="day-num">${day}</div>
             <div class="day-emoji">${emoji}</div>
-            <div class="day-score">${hasRecord ? `${score}/7` : "未打卡"}</div>
+            <div class="day-score">${hasRecord ? `已打卡 ${score}/7` : "未打卡"}</div>
             ${hasRecord ? `<div class="record-dot"></div>` : `<div class="record-dot empty-dot"></div>`}
           </div>
         `;
@@ -936,7 +930,6 @@
           const date = cell.getAttribute("data-date");
           const row = rows.find(r => r.date === date);
           if (row) {
-            loadRecordToForm(row);
             showDetail(row);
           }
         });
