@@ -1318,70 +1318,76 @@
       showMessage(checkinMsg, `已載入 ${row.date} 的舊紀錄，可以直接修改。`);
     }
 
-    function renderChallengeCalendar(rows) {
-      const startDate = getChallengeStartDate();
-      const today = getTodayStr();
-      const todayIndex = diffDays(startDate, today) + 1;
+   function renderChallengeCalendar(rows) {
+  const startDate = getChallengeStartDate();
+  const today = getTodayStr();
+  const todayIndex = diffDays(startDate, today) + 1;
 
-      const dayMap = {};
-      rows.forEach(item => {
-        const dayIndex = diffDays(startDate, item.date) + 1;
-        if (dayIndex >= 1 && dayIndex <= 30) {
-          dayMap[dayIndex] = item;
-        }
-      });
-
-      let html = `<div class="challenge-grid">`;
-
-      for (let i = 1; i <= 30; i++) {
-        const item = dayMap[i];
-        const isToday = i === todayIndex;
-        const isPastOrToday = i <= todayIndex;
-
-        let classes = ["day-tile"];
-        let icon = "🔒";
-        let sub = `Day${i}`;
-        let clickable = false;
-
-        if (item) {
-          classes.push("done");
-          icon = getEmojiByScore(Number(item.score || 0));
-          sub = `已打卡 ${item.score}/7`;
-          clickable = true;
-        } else if (isPastOrToday) {
-          classes.push("pending");
-          icon = isToday ? "🫥" : "🔓";
-          sub = isToday ? "未打卡" : "未完成";
-        } else {
-          classes.push("future");
-          icon = "🔒";
-          sub = `Day${i}`;
-        }
-
-        if (isToday) classes.push("today");
-        if (clickable) classes.push("clickable");
-
-        html += `
-          <div class="${classes.join(" ")}" ${clickable ? `data-day="${i}"` : ""}>
-            <div class="tile-icon">${icon}</div>
-            <div class="tile-title">Day${i}</div>
-            <div class="tile-sub">${sub}</div>
-            <div class="tile-dot"></div>
-          </div>
-        `;
-      }
-
-      html += `</div>`;
-      historyWrap.innerHTML = html;
-
-      historyWrap.querySelectorAll(".day-tile[data-day]").forEach(tile => {
-        tile.addEventListener("click", () => {
-          const dayNum = Number(tile.getAttribute("data-day"));
-          const row = dayMap[dayNum];
-          if (row) showDetail(row, dayNum);
-        });
-      });
+  const dayMap = {};
+  rows.forEach(item => {
+    const dayIndex = diffDays(startDate, item.date) + 1;
+    if (dayIndex >= 1 && dayIndex <= 30) {
+      dayMap[dayIndex] = item;
     }
+  });
+
+  let html = `<div class="challenge-grid">`;
+
+  for (let i = 1; i <= 30; i++) {
+    const item = dayMap[i];
+    const isToday = i === todayIndex;
+    const isPast = i < todayIndex;
+    const isFuture = i > todayIndex;
+
+    let classes = ["day-tile"];
+    let icon = "🔒";
+    let sub = `Day${i}`;
+    let clickable = false;
+
+    if (item) {
+      // 已打卡
+      classes.push("done");
+      icon = "✅";
+      sub = `已打卡 ${item.score}/7`;
+      clickable = true;
+    } else if (isToday) {
+      // 今天但尚未打卡
+      classes.push("pending", "today");
+      icon = "🫥";
+      sub = "未打卡";
+    } else if (isPast) {
+      // 過去但沒打卡
+      classes.push("pending");
+      icon = "⭕";
+      sub = "未完成";
+    } else if (isFuture) {
+      // 未來日期
+      classes.push("future");
+      icon = "🔒";
+      sub = "未解鎖";
+    }
+
+    html += `
+      <div class="${classes.join(" ")}" ${clickable ? `data-day="${i}"` : ""}>
+        <div class="tile-icon">${icon}</div>
+        <div class="tile-title">Day${i}</div>
+        <div class="tile-sub">${sub}</div>
+        <div class="tile-dot"></div>
+      </div>
+    `;
+  }
+
+  html += `</div>`;
+  historyWrap.innerHTML = html;
+
+  historyWrap.querySelectorAll(".day-tile[data-day]").forEach(tile => {
+    tile.addEventListener("click", () => {
+      const dayNum = Number(tile.getAttribute("data-day"));
+      const row = dayMap[dayNum];
+      if (row) showDetail(row, dayNum);
+    });
+  });
+}
 
     function showDetail(row, dayNum = null) {
       const habitHtml = row.habits.map((done, index) => `
