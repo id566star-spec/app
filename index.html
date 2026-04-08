@@ -1,492 +1,1019 @@
-<script>
-  const API = "https://script.google.com/macros/s/AKfycbz7RmEQzN1a1A780SZhF3R3fcn9dPuhC_VUwMz3Nuw0ctMcVI2gV4HcCrNV3w_op7ga/exec";
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>30天打卡身心靈成長競賽</title>
+  <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * { box-sizing: border-box; }
 
-  const quotes = [
-    "你每天的選擇，決定你的人生 💛",
-    "小習慣，會長成大改變 🌱",
-    "今天的你，也很值得被鼓勵 ✨",
-    "持續，不必完美，只要前進 ☀️",
-    "你正在慢慢成為更喜歡的自己 🌷"
-  ];
-
-  const habitList = [
-    "早起 10 分鐘",
-    "喝足夠的水",
-    "運動 / 伸展",
-    "閱讀 10 分鐘",
-    "感恩一件事",
-    "正念安靜一下",
-    "鼓勵自己一句話"
-  ];
-
-  const nicknameInput = document.getElementById("nickname");
-  const pinInput = document.getElementById("pin");
-  const loginBtn = document.getElementById("loginBtn");
-  const registerBtn = document.getElementById("registerBtn");
-  const loginMsg = document.getElementById("loginMsg");
-  const checkinBtn = document.getElementById("checkinBtn");
-  const checkinMsg = document.getElementById("checkinMsg");
-  const loginPage = document.getElementById("loginPage");
-  const checkinPage = document.getElementById("checkinPage");
-  const habitsBox = document.getElementById("habitsBox");
-  const logoutBtn = document.getElementById("logoutBtn");
-  const helloText = document.getElementById("helloText");
-  const quoteText = document.getElementById("quoteText");
-  const loadHistoryBtn = document.getElementById("loadHistoryBtn");
-  const loadStatsBtn = document.getElementById("loadStatsBtn");
-  const historyWrap = document.getElementById("historyWrap");
-  const statsWrap = document.getElementById("statsWrap");
-  const detailModal = document.getElementById("detailModal");
-  const detailContent = document.getElementById("detailContent");
-  const closeDetailBtn = document.getElementById("closeDetailBtn");
-
-  let scoreChart = null;
-  let habitChart = null;
-
-  quoteText.textContent = quotes[Math.floor(Math.random() * quotes.length)];
-
-  function renderHabits() {
-    habitsBox.innerHTML = "";
-    habitList.forEach((habit, index) => {
-      const item = document.createElement("label");
-      item.className = "habit-item";
-      item.innerHTML = `
-        <span>${habit}</span>
-        <input type="checkbox" id="habit_${index}">
-      `;
-      habitsBox.appendChild(item);
-    });
-  }
-
-  function setLoading(isLoading) {
-    loginBtn.disabled = isLoading;
-    registerBtn.disabled = isLoading;
-    checkinBtn.disabled = isLoading;
-  }
-
-  function showMessage(el, text, isError = false) {
-    el.textContent = text;
-    el.style.color = isError ? "#ff9d9d" : "#ffd89c";
-  }
-
-  function validateInput() {
-    const nickname = nicknameInput.value.trim();
-    const pin = pinInput.value.trim();
-
-    if (!nickname) {
-      showMessage(loginMsg, "請先輸入暱稱", true);
-      return null;
+    body {
+      margin: 0;
+      font-family: "ZCOOL KuaiLe", cursive;
+      background: #f4efe8;
+      color: #4a3a33;
     }
 
-    if (!/^\d{4}$/.test(pin)) {
-      showMessage(loginMsg, "PIN 必須是 4 位數字", true);
-      return null;
+    .top {
+      background: linear-gradient(180deg, #efe7dc 0%, #eadfce 100%);
+      padding: 20px 16px 16px;
+      text-align: center;
+      border-bottom: 1px solid rgba(120, 95, 75, 0.08);
     }
 
-    return { nickname, pin };
-  }
-
-  async function postData(data) {
-    const res = await fetch(API, {
-      method: "POST",
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8"
-      },
-      body: JSON.stringify(data)
-    });
-
-    const text = await res.text();
-
-    try {
-      return JSON.parse(text);
-    } catch (err) {
-      throw new Error("API 回傳不是 JSON：" + text);
-    }
-  }
-
-  async function registerUser() {
-    const form = validateInput();
-    if (!form) return;
-
-    showMessage(loginMsg, "註冊中...");
-    setLoading(true);
-
-    try {
-      const data = await postData({
-        action: "register",
-        nickname: form.nickname,
-        pin: form.pin
-      });
-
-      if (data.status === "success") {
-        localStorage.setItem("user_id", data.user_id);
-        localStorage.setItem("nickname", form.nickname);
-        showMessage(loginMsg, "註冊成功，正在進入打卡頁...");
-        setTimeout(showCheckinPage, 600);
-      } else {
-        showMessage(loginMsg, data.message || "註冊失敗", true);
-      }
-    } catch (error) {
-      showMessage(loginMsg, "註冊失敗：" + error.message, true);
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function loginUser() {
-    const form = validateInput();
-    if (!form) return;
-
-    showMessage(loginMsg, "登入中...");
-    setLoading(true);
-
-    try {
-      const data = await postData({
-        action: "login",
-        nickname: form.nickname,
-        pin: form.pin
-      });
-
-      if (data.status === "success") {
-        localStorage.setItem("user_id", data.user_id);
-        localStorage.setItem("nickname", form.nickname);
-        showMessage(loginMsg, "登入成功，正在進入打卡頁...");
-        setTimeout(showCheckinPage, 600);
-      } else {
-        showMessage(loginMsg, "登入失敗，請確認暱稱與 PIN", true);
-      }
-    } catch (error) {
-      showMessage(loginMsg, "登入失敗：" + error.message, true);
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function submitCheckin() {
-    const userId = localStorage.getItem("user_id");
-    const nickname = localStorage.getItem("nickname") || "你";
-
-    if (!userId) {
-      showMessage(checkinMsg, "尚未登入，請先登入", true);
-      return;
+    .top h1 {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.4;
+      color: #5a463c;
     }
 
-    const habits = [];
-    for (let i = 0; i < habitList.length; i++) {
-      habits.push(document.getElementById(`habit_${i}`).checked);
+    .top p {
+      margin: 8px 0 0;
+      font-size: 15px;
+      color: #8a6d5e;
     }
 
-    showMessage(checkinMsg, "送出打卡中...");
-    setLoading(true);
-
-    try {
-      const data = await postData({
-        action: "checkin",
-        user_id: userId,
-        nickname: nickname,
-        date: new Date().toLocaleDateString("sv-SE"),
-        habits: habits
-      });
-
-      if (data.status === "success") {
-        showMessage(checkinMsg, `打卡成功，今日得分 ${data.score} / 7 ✨`);
-        await loadHistory();
-        await loadStats();
-      } else {
-        showMessage(checkinMsg, data.message || "打卡失敗", true);
-      }
-    } catch (error) {
-      showMessage(checkinMsg, "打卡失敗：" + error.message, true);
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  function showCheckinPage() {
-    const nickname = localStorage.getItem("nickname") || "你";
-    loginPage.classList.add("hidden");
-    checkinPage.classList.remove("hidden");
-    helloText.textContent = `${nickname}，今天也一起慢慢變好 🌷`;
-    renderHabits();
-  }
-
-  function logout() {
-    localStorage.removeItem("user_id");
-    localStorage.removeItem("nickname");
-    checkinPage.classList.add("hidden");
-    loginPage.classList.remove("hidden");
-    nicknameInput.value = "";
-    pinInput.value = "";
-    showMessage(loginMsg, "已登出");
-    showMessage(checkinMsg, "");
-    historyWrap.innerHTML = "";
-    statsWrap.innerHTML = "";
-  }
-
-  function formatDateToYMD(date) {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, "0");
-    const d = String(date.getDate()).padStart(2, "0");
-    return `${y}-${m}-${d}`;
-  }
-
-  function getEmojiByScore(score) {
-    if (score >= 6) return "😊";
-    if (score >= 4) return "🙂";
-    if (score >= 1) return "😶";
-    return " ";
-  }
-
-  function normalizeHistoryRows(rows) {
-    return rows.map(row => ({
-      id: row[0],
-      user_id: row[1],
-      date: row[2],
-      habits: [row[3], row[4], row[5], row[6], row[7], row[8], row[9]].map(v => {
-        if (v === true || v === "TRUE" || v === "true") return true;
-        return false;
-      }),
-      score: Number(row[10]) || 0,
-      created_at: row[11]
-    }));
-  }
-
-  async function fetchHistoryData() {
-    const userId = localStorage.getItem("user_id");
-    if (!userId) throw new Error("尚未登入");
-
-    const data = await postData({
-      action: "getData",
-      user_id: userId
-    });
-
-    if (data.status !== "success") {
-      throw new Error(data.message || "取得資料失敗");
+    .wrap {
+      max-width: 430px;
+      margin: 0 auto;
+      padding: 14px 14px 30px;
     }
 
-    return normalizeHistoryRows(data.data || []);
-  }
-
-  async function loadHistory() {
-    historyWrap.innerHTML = `<div class="msg">讀取紀錄中...</div>`;
-
-    try {
-      const rows = await fetchHistoryData();
-      renderCalendar(rows);
-    } catch (error) {
-      historyWrap.innerHTML = `<div class="msg" style="color:#ff9d9d;">${error.message}</div>`;
-      console.error(error);
+    .card {
+      background: #fffaf5;
+      border-radius: 22px;
+      padding: 18px 14px 20px;
+      box-shadow: 0 8px 24px rgba(111, 90, 74, 0.08);
+      margin-bottom: 16px;
     }
-  }
 
-  function renderCalendar(rows) {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const startWeekday = firstDay.getDay();
-    const totalDays = lastDay.getDate();
+    .section-title {
+      text-align: center;
+      font-size: 22px;
+      margin: 0 0 14px;
+      color: #5a463c;
+    }
 
-    const map = {};
-    rows.forEach(item => {
-      map[item.date] = item;
-    });
+    .field {
+      margin-bottom: 14px;
+    }
 
-    let html = `
-      <div class="calendar-box">
-        <div style="text-align:center;font-size:20px;margin-bottom:14px;color:#ffe7b0;">
-          ${year} 年 ${month + 1} 月
+    .label {
+      font-size: 15px;
+      margin-bottom: 8px;
+      color: #6d584b;
+      display: block;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      border: none;
+      outline: none;
+      padding: 14px;
+      border-radius: 14px;
+      font-size: 16px;
+      background: #efe9df;
+      color: #4a3a33;
+      font-family: inherit;
+    }
+
+    textarea {
+      min-height: 92px;
+      resize: vertical;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: #9b877a;
+    }
+
+    .btns {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    button {
+      border: none;
+      outline: none;
+      cursor: pointer;
+      background: #d38a67;
+      color: #fff;
+      border-radius: 16px;
+      padding: 13px 22px;
+      font-size: 18px;
+      font-family: inherit;
+      box-shadow: 0 6px 14px rgba(211, 138, 103, 0.2);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .small-btn {
+      background: #b89b88;
+      font-size: 15px;
+      padding: 11px 18px;
+      box-shadow: none;
+    }
+
+    .outline-btn {
+      background: #fff;
+      color: #9b6b54;
+      border: 1px solid #e3c7b7;
+      box-shadow: none;
+    }
+
+    .msg {
+      margin-top: 12px;
+      text-align: center;
+      font-size: 14px;
+      min-height: 22px;
+      color: #8f6e5d;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .quote {
+      text-align: center;
+      margin: 0 0 14px;
+      color: #8a6d5e;
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .habit-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f4ede4;
+      padding: 13px 14px;
+      border-radius: 14px;
+      margin-bottom: 10px;
+      font-size: 15px;
+      color: #5b483e;
+    }
+
+    .habit-item input[type="checkbox"] {
+      width: 24px;
+      height: 24px;
+      accent-color: #d38a67;
+    }
+
+    .sub-card {
+      background: #fcf7f1;
+      border-radius: 18px;
+      padding: 14px;
+      margin-top: 14px;
+      border: 1px solid #f0e2d5;
+    }
+
+    .sub-title {
+      font-size: 18px;
+      margin-bottom: 12px;
+      color: #6d584b;
+      text-align: center;
+    }
+
+    .calendar-box {
+      background: #fffdf9;
+      border-radius: 18px;
+      padding: 14px 10px;
+      margin-top: 14px;
+      border: 1px solid #f1e5d9;
+    }
+
+    .calendar-head {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      margin-bottom: 10px;
+      text-align: center;
+      color: #8c7668;
+      font-size: 13px;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+    }
+
+    .day-cell {
+      min-height: 68px;
+      border-radius: 14px;
+      background: #f8f2eb;
+      padding: 6px 3px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 12px;
+      color: #5c4a40;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      border: 1px solid transparent;
+    }
+
+    .day-cell:hover {
+      border-color: #e3c7b7;
+    }
+
+    .day-cell.empty {
+      background: transparent;
+      cursor: default;
+    }
+
+    .day-num {
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+
+    .day-emoji {
+      font-size: 20px;
+      line-height: 1;
+      min-height: 22px;
+    }
+
+    .day-score {
+      font-size: 11px;
+      margin-top: 4px;
+      color: #b06f4e;
+    }
+
+    .today-mark {
+      border-color: #d38a67;
+      background: #fff4eb;
+    }
+
+    .chart-card {
+      background: #fffdf9;
+      border-radius: 18px;
+      padding: 14px;
+      margin-top: 14px;
+      border: 1px solid #f1e5d9;
+    }
+
+    .chart-title {
+      font-size: 17px;
+      margin-bottom: 12px;
+      text-align: center;
+      color: #6d584b;
+    }
+
+    .review-box {
+      background: #f7f0e7;
+      border-radius: 14px;
+      padding: 10px 12px;
+      margin-top: 8px;
+      line-height: 1.7;
+      color: #5f4b41;
+      font-size: 14px;
+    }
+
+    .modal-mask {
+      position: fixed;
+      inset: 0;
+      background: rgba(70, 50, 40, 0.42);
+      z-index: 999;
+      padding: 16px;
+      overflow: auto;
+    }
+
+    .modal-card {
+      max-width: 430px;
+      margin: 30px auto;
+      background: #fffaf5;
+      border-radius: 22px;
+      padding: 18px 14px 20px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.16);
+    }
+
+    .modal-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .modal-title {
+      font-size: 22px;
+      color: #5a463c;
+    }
+
+    .score-pill {
+      display: inline-block;
+      background: #f6e1d3;
+      color: #9d6447;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 14px;
+      margin-top: 6px;
+    }
+
+    .hint {
+      text-align: center;
+      color: #9b877a;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <h1>🌱 30天身心靈挑戰</h1>
+    <p id="quoteText">每天都值得變得更美好 💛</p>
+  </div>
+
+  <div class="wrap">
+    <div class="card" id="loginPage">
+      <div class="section-title">登入 / 註冊</div>
+
+      <div class="field">
+        <label class="label" for="nickname">暱稱</label>
+        <input id="nickname" type="text" placeholder="請輸入你的暱稱">
+      </div>
+
+      <div class="field">
+        <label class="label" for="pin">PIN（4位數）</label>
+        <input id="pin" type="password" maxlength="4" inputmode="numeric" placeholder="請輸入 4 位數 PIN">
+      </div>
+
+      <div class="btns">
+        <button id="loginBtn" type="button">登入</button>
+        <button id="registerBtn" type="button">註冊</button>
+      </div>
+
+      <div class="msg" id="loginMsg"></div>
+    </div>
+
+    <div class="hidden" id="mainPage">
+      <div class="card">
+        <div class="section-title">今日打卡</div>
+        <div class="quote" id="helloText"></div>
+        <div id="todayStatusHint" class="hint"></div>
+
+        <div id="habitsBox"></div>
+
+        <div class="sub-card">
+          <div class="sub-title">🌙 今日復盤</div>
+
+          <div class="field">
+            <label class="label" for="reviewGood">✅ 今天做得好的一件事</label>
+            <textarea id="reviewGood" placeholder="哪怕只是小事，也值得被看見 🌱"></textarea>
+          </div>
+
+          <div class="field">
+            <label class="label" for="reviewBad">❌ 今天可以更好的一件事</label>
+            <textarea id="reviewBad" placeholder="不批判自己，只是觀察 💛"></textarea>
+          </div>
+
+          <div class="field" style="margin-bottom:0;">
+            <label class="label" for="reviewBetter">💡 我可以怎麼想會更好？</label>
+            <textarea id="reviewBetter" placeholder="一個小小的改變就夠了 ✨"></textarea>
+          </div>
         </div>
-        <div class="calendar-head">
-          <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
+
+        <div class="btns">
+          <button id="checkinBtn" type="button">完成今日打卡</button>
         </div>
-        <div class="calendar-grid">
-    `;
 
-    for (let i = 0; i < startWeekday; i++) {
-      html += `<div class="day-cell empty"></div>`;
-    }
+        <div class="msg" id="checkinMsg"></div>
 
-    for (let day = 1; day <= totalDays; day++) {
-      const dateStr = formatDateToYMD(new Date(year, month, day));
-      const item = map[dateStr];
-      const score = item ? item.score : 0;
-      const emoji = item ? getEmojiByScore(score) : "";
-      const hasData = !!item;
-
-      html += `
-        <div class="day-cell ${hasData ? "" : ""}" ${hasData ? `data-date="${dateStr}"` : ""}>
-          <div class="day-num">${day}</div>
-          <div class="day-emoji">${emoji}</div>
-          <div class="day-score">${hasData ? `${score}/7` : ""}</div>
-        </div>
-      `;
-    }
-
-    html += `</div></div>`;
-    historyWrap.innerHTML = html;
-
-    historyWrap.querySelectorAll(".day-cell[data-date]").forEach(cell => {
-      cell.addEventListener("click", () => {
-        const date = cell.getAttribute("data-date");
-        const row = rows.find(r => r.date === date);
-        if (row) showDetail(row);
-      });
-    });
-  }
-
-  function showDetail(row) {
-    const habitHtml = row.habits.map((done, index) => {
-      return `
-        <div style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
-          ${done ? "✅" : "⬜"} ${habitList[index]}
-        </div>
-      `;
-    }).join("");
-
-    detailContent.innerHTML = `
-      <div style="margin-bottom:10px;">📅 日期：${row.date}</div>
-      <div style="margin-bottom:10px;">⭐ 分數：${row.score} / 7</div>
-      <div style="margin-bottom:12px;color:#ffe7b0;">今日完成項目</div>
-      <div>${habitHtml}</div>
-    `;
-
-    detailModal.classList.remove("hidden");
-  }
-
-  function renderStats(rows) {
-    if (!rows.length) {
-      statsWrap.innerHTML = `<div class="msg">還沒有打卡資料喔</div>`;
-      return;
-    }
-
-    const sorted = [...rows].sort((a, b) => a.date.localeCompare(b.date));
-    const recent7 = sorted.slice(-7);
-
-    const habitTotals = Array(7).fill(0);
-    sorted.forEach(item => {
-      item.habits.forEach((done, i) => {
-        if (done) habitTotals[i]++;
-      });
-    });
-
-    const totalPossible = sorted.length * 7;
-    const totalDone = sorted.reduce((sum, item) => sum + item.score, 0);
-    const rate = totalPossible ? Math.round((totalDone / totalPossible) * 100) : 0;
-
-    statsWrap.innerHTML = `
-      <div class="chart-card">
-        <div class="chart-title">累積達成率</div>
-        <div style="text-align:center;font-size:28px;color:#fff;">${rate}%</div>
-        <div style="text-align:center;margin-top:8px;color:#d8cfc2;">
-          共完成 ${totalDone} / ${totalPossible} 次習慣
+        <div class="btns">
+          <button class="small-btn" id="loadHistoryBtn" type="button">查看本月紀錄</button>
+          <button class="small-btn" id="loadStatsBtn" type="button">查看統計圖表</button>
+          <button class="small-btn outline-btn" id="logoutBtn" type="button">登出</button>
         </div>
       </div>
 
-      <div class="chart-card">
-        <div class="chart-title">近 7 次打卡分數</div>
-        <canvas id="scoreChartCanvas"></canvas>
+      <div class="card">
+        <div class="section-title">月曆檢視</div>
+        <div id="historyWrap"></div>
       </div>
 
-      <div class="chart-card">
-        <div class="chart-title">7 個習慣累積完成次數</div>
-        <canvas id="habitChartCanvas"></canvas>
+      <div class="card">
+        <div class="section-title">成果統計</div>
+        <div id="statsWrap"></div>
       </div>
-    `;
+    </div>
+  </div>
 
-    const scoreCtx = document.getElementById("scoreChartCanvas");
-    const habitCtx = document.getElementById("habitChartCanvas");
+  <div id="detailModal" class="modal-mask hidden">
+    <div class="modal-card">
+      <div class="modal-top">
+        <div class="modal-title">當日紀錄</div>
+        <button class="small-btn" id="closeDetailBtn" type="button">關閉</button>
+      </div>
+      <div id="detailContent"></div>
+    </div>
+  </div>
 
-    if (scoreChart) scoreChart.destroy();
-    if (habitChart) habitChart.destroy();
+  <script>
+    const API = "https://script.google.com/macros/s/AKfycbz7RmEQzN1a1A780SZhF3R3fcn9dPuhC_VUwMz3Nuw0ctMcVI2gV4HcCrNV3w_op7ga/exec";
 
-    scoreChart = new Chart(scoreCtx, {
-      type: "line",
-      data: {
-        labels: recent7.map(item => item.date.slice(5)),
-        datasets: [{
-          label: "每日分數",
-          data: recent7.map(item => item.score),
-          tension: 0.35,
-          fill: false
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { labels: { color: "#fff" } }
+    const quotes = [
+      "不要小心計算如何，先把今天挺住就夠好了。",
+      "持續不是逼自己，而是每天都溫柔地再試一次。",
+      "小小的完成，也是在替未來的自己鋪路。",
+      "今天的你，不需要完美，只需要前進一點點。",
+      "你願意回來照顧自己，已經很棒了。"
+    ];
+
+    const habitList = [
+      "早起 10 分鐘",
+      "喝足夠的水",
+      "運動 / 伸展",
+      "閱讀 10 分鐘",
+      "感恩一件事",
+      "正念安靜一下",
+      "鼓勵自己一句話"
+    ];
+
+    const nicknameInput = document.getElementById("nickname");
+    const pinInput = document.getElementById("pin");
+    const loginBtn = document.getElementById("loginBtn");
+    const registerBtn = document.getElementById("registerBtn");
+    const loginMsg = document.getElementById("loginMsg");
+
+    const mainPage = document.getElementById("mainPage");
+    const loginPage = document.getElementById("loginPage");
+    const helloText = document.getElementById("helloText");
+    const quoteText = document.getElementById("quoteText");
+    const habitsBox = document.getElementById("habitsBox");
+    const todayStatusHint = document.getElementById("todayStatusHint");
+
+    const reviewGood = document.getElementById("reviewGood");
+    const reviewBad = document.getElementById("reviewBad");
+    const reviewBetter = document.getElementById("reviewBetter");
+
+    const checkinBtn = document.getElementById("checkinBtn");
+    const checkinMsg = document.getElementById("checkinMsg");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const loadHistoryBtn = document.getElementById("loadHistoryBtn");
+    const loadStatsBtn = document.getElementById("loadStatsBtn");
+
+    const historyWrap = document.getElementById("historyWrap");
+    const statsWrap = document.getElementById("statsWrap");
+
+    const detailModal = document.getElementById("detailModal");
+    const detailContent = document.getElementById("detailContent");
+    const closeDetailBtn = document.getElementById("closeDetailBtn");
+
+    let scoreChart = null;
+    let habitChart = null;
+    let currentRows = [];
+    let todayExistingRecord = null;
+    let editingRecord = null;
+
+    quoteText.textContent = quotes[Math.floor(Math.random() * quotes.length)];
+
+    function formatDateToYMD(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, "0");
+      const d = String(date.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+
+    function getTodayStr() {
+      return formatDateToYMD(new Date());
+    }
+
+    function renderHabits(selected = []) {
+      habitsBox.innerHTML = "";
+      habitList.forEach((habit, index) => {
+        const item = document.createElement("label");
+        item.className = "habit-item";
+        item.innerHTML = `
+          <span>${habit}</span>
+          <input type="checkbox" id="habit_${index}" ${selected[index] ? "checked" : ""}>
+        `;
+        habitsBox.appendChild(item);
+      });
+    }
+
+    function getSelectedHabits() {
+      const habits = [];
+      for (let i = 0; i < habitList.length; i++) {
+        habits.push(document.getElementById(`habit_${i}`).checked);
+      }
+      return habits;
+    }
+
+    function setLoading(isLoading) {
+      loginBtn.disabled = isLoading;
+      registerBtn.disabled = isLoading;
+      checkinBtn.disabled = isLoading;
+      loadHistoryBtn.disabled = isLoading;
+      loadStatsBtn.disabled = isLoading;
+    }
+
+    function showMessage(el, text, isError = false) {
+      el.textContent = text;
+      el.style.color = isError ? "#c95d5d" : "#8f6e5d";
+    }
+
+    function validateInput() {
+      const nickname = nicknameInput.value.trim();
+      const pin = pinInput.value.trim();
+
+      if (!nickname) {
+        showMessage(loginMsg, "請先輸入暱稱", true);
+        return null;
+      }
+      if (!/^\\d{4}$/.test(pin)) {
+        showMessage(loginMsg, "PIN 必須是 4 位數字", true);
+        return null;
+      }
+      return { nickname, pin };
+    }
+
+    async function postData(data) {
+      const res = await fetch(API, {
+        method: "POST",
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8"
         },
-        scales: {
-          x: { ticks: { color: "#ddd" } },
-          y: {
-            beginAtZero: true,
-            max: 7,
-            ticks: { stepSize: 1, color: "#ddd" }
-          }
+        body: JSON.stringify(data)
+      });
+
+      const text = await res.text();
+
+      try {
+        return JSON.parse(text);
+      } catch (err) {
+        throw new Error("API 回傳不是 JSON：" + text);
+      }
+    }
+
+    function normalizeHistoryRows(rows) {
+      return rows.map(row => ({
+        id: String(row[0] || ""),
+        user_id: String(row[1] || ""),
+        date: String(row[2] || ""),
+        habits: [row[3], row[4], row[5], row[6], row[7], row[8], row[9]].map(v => v === true || v === "TRUE" || v === "true"),
+        score: Number(row[10]) || 0,
+        review_good: String(row[11] || ""),
+        review_bad: String(row[12] || ""),
+        review_better: String(row[13] || ""),
+        created_at: row[14] || ""
+      }));
+    }
+
+    async function registerUser() {
+      const form = validateInput();
+      if (!form) return;
+
+      setLoading(true);
+      showMessage(loginMsg, "註冊中...");
+
+      try {
+        const data = await postData({
+          action: "register",
+          nickname: form.nickname,
+          pin: form.pin
+        });
+
+        if (data.status === "success") {
+          localStorage.setItem("user_id", data.user_id);
+          localStorage.setItem("nickname", form.nickname);
+          showMessage(loginMsg, "註冊成功");
+          await enterMainPage();
+        } else {
+          showMessage(loginMsg, data.message || "註冊失敗", true);
+        }
+      } catch (error) {
+        showMessage(loginMsg, "註冊失敗：" + error.message, true);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    async function loginUser() {
+      const form = validateInput();
+      if (!form) return;
+
+      setLoading(true);
+      showMessage(loginMsg, "登入中...");
+
+      try {
+        const data = await postData({
+          action: "login",
+          nickname: form.nickname,
+          pin: form.pin
+        });
+
+        if (data.status === "success") {
+          localStorage.setItem("user_id", data.user_id);
+          localStorage.setItem("nickname", form.nickname);
+          showMessage(loginMsg, "登入成功");
+          await enterMainPage();
+        } else {
+          showMessage(loginMsg, "登入失敗，請確認暱稱與 PIN", true);
+        }
+      } catch (error) {
+        showMessage(loginMsg, "登入失敗：" + error.message, true);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    async function fetchHistoryData() {
+      const userId = localStorage.getItem("user_id");
+      if (!userId) throw new Error("尚未登入");
+
+      const data = await postData({
+        action: "getData",
+        user_id: userId
+      });
+
+      if (data.status !== "success") {
+        throw new Error(data.message || "取得資料失敗");
+      }
+
+      return normalizeHistoryRows(data.data || []);
+    }
+
+    function fillFormWithRecord(record) {
+      renderHabits(record?.habits || []);
+      reviewGood.value = record?.review_good || "";
+      reviewBad.value = record?.review_bad || "";
+      reviewBetter.value = record?.review_better || "";
+    }
+
+    function clearTodayForm() {
+      renderHabits([]);
+      reviewGood.value = "";
+      reviewBad.value = "";
+      reviewBetter.value = "";
+    }
+
+    function updateTodayStatus() {
+      const nickname = localStorage.getItem("nickname") || "你";
+      helloText.textContent = `${nickname}，今天也一起慢慢變好 🌷`;
+
+      if (todayExistingRecord) {
+        todayStatusHint.textContent = `今天已打卡，可在月曆中點今天進行編輯。今日分數：${todayExistingRecord.score}/7`;
+        checkinBtn.disabled = true;
+      } else {
+        todayStatusHint.textContent = "今天還沒打卡，完成後就能記錄在月曆上。";
+        checkinBtn.disabled = false;
+      }
+    }
+
+    async function refreshAllViews() {
+      currentRows = await fetchHistoryData();
+      const today = getTodayStr();
+      todayExistingRecord = currentRows.find(r => r.date === today) || null;
+
+      if (!editingRecord) {
+        if (todayExistingRecord) {
+          fillFormWithRecord(todayExistingRecord);
+        } else {
+          clearTodayForm();
         }
       }
-    });
 
-    habitChart = new Chart(habitCtx, {
-      type: "bar",
-      data: {
-        labels: habitList,
-        datasets: [{
-          label: "完成次數",
-          data: habitTotals
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { labels: { color: "#fff" } }
+      updateTodayStatus();
+      renderCalendar(currentRows);
+      renderStats(currentRows);
+    }
+
+    async function enterMainPage() {
+      loginPage.classList.add("hidden");
+      mainPage.classList.remove("hidden");
+      editingRecord = null;
+      await refreshAllViews();
+    }
+
+    async function createTodayCheckin() {
+      const userId = localStorage.getItem("user_id");
+      if (!userId) {
+        showMessage(checkinMsg, "請先登入", true);
+        return;
+      }
+
+      if (todayExistingRecord) {
+        showMessage(checkinMsg, "今天已經打卡過了，請到月曆點今天進行編輯。", true);
+        return;
+      }
+
+      const habits = getSelectedHabits();
+
+      setLoading(true);
+      showMessage(checkinMsg, "送出今日打卡中...");
+
+      try {
+        const data = await postData({
+          action: "checkin",
+          user_id: userId,
+          date: getTodayStr(),
+          habits: habits,
+          review_good: reviewGood.value.trim(),
+          review_bad: reviewBad.value.trim(),
+          review_better: reviewBetter.value.trim()
+        });
+
+        if (data.status === "success") {
+          showMessage(checkinMsg, `今日打卡成功，得分 ${data.score}/7 ✨`);
+          editingRecord = null;
+          await refreshAllViews();
+        } else {
+          showMessage(checkinMsg, data.message || "打卡失敗", true);
+        }
+      } catch (error) {
+        showMessage(checkinMsg, "打卡失敗：" + error.message, true);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    async function updateCheckin(recordId, dateStr) {
+      const userId = localStorage.getItem("user_id");
+      if (!userId) {
+        showMessage(checkinMsg, "請先登入", true);
+        return;
+      }
+
+      const habits = getSelectedHabits();
+
+      setLoading(true);
+      showMessage(checkinMsg, "更新紀錄中...");
+
+      try {
+        const data = await postData({
+          action: "updateCheckin",
+          record_id: recordId,
+          user_id: userId,
+          date: dateStr,
+          habits: habits,
+          review_good: reviewGood.value.trim(),
+          review_bad: reviewBad.value.trim(),
+          review_better: reviewBetter.value.trim()
+        });
+
+        if (data.status === "success") {
+          showMessage(checkinMsg, `已更新 ${dateStr} 的打卡紀錄，得分 ${data.score}/7`);
+          editingRecord = null;
+          detailModal.classList.add("hidden");
+          await refreshAllViews();
+        } else {
+          showMessage(checkinMsg, data.message || "更新失敗", true);
+        }
+      } catch (error) {
+        showMessage(checkinMsg, "更新失敗：" + error.message, true);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    async function handleCheckinSubmit() {
+      if (editingRecord) {
+        await updateCheckin(editingRecord.id, editingRecord.date);
+      } else {
+        await createTodayCheckin();
+      }
+    }
+
+    function getEmojiByScore(score) {
+      if (score >= 6) return "😊";
+      if (score >= 4) return "🙂";
+      if (score >= 1) return "😶";
+      return "";
+    }
+
+    function renderCalendar(rows) {
+      if (!rows.length) {
+        historyWrap.innerHTML = `<div class="msg">還沒有打卡紀錄喔</div>`;
+        return;
+      }
+
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth();
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      const startWeekday = firstDay.getDay();
+      const totalDays = lastDay.getDate();
+      const today = getTodayStr();
+
+      const map = {};
+      rows.forEach(item => {
+        map[item.date] = item;
+      });
+
+      let html = `
+        <div class="calendar-box">
+          <div style="text-align:center;font-size:19px;margin-bottom:12px;color:#6d584b;">
+            ${year} 年 ${month + 1} 月
+          </div>
+          <div class="calendar-head">
+            <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
+          </div>
+          <div class="calendar-grid">
+      `;
+
+      for (let i = 0; i < startWeekday; i++) {
+        html += `<div class="day-cell empty"></div>`;
+      }
+
+      for (let day = 1; day <= totalDays; day++) {
+        const dateStr = formatDateToYMD(new Date(year, month, day));
+        const item = map[dateStr];
+        const score = item ? item.score : 0;
+        const emoji = item ? getEmojiByScore(score) : "";
+        const classes = ["day-cell"];
+        if (dateStr === today) classes.push("today-mark");
+
+        html += `
+          <div class="${classes.join(" ")}" ${item ? `data-date="${dateStr}"` : ""}>
+            <div class="day-num">${day}</div>
+            <div class="day-emoji">${emoji}</div>
+            <div class="day-score">${item ? `${score}/7` : ""}</div>
+          </div>
+        `;
+      }
+
+      html += `</div></div>`;
+      historyWrap.innerHTML = html;
+
+      historyWrap.querySelectorAll(".day-cell[data-date]").forEach(cell => {
+        cell.addEventListener("click", () => {
+          const date = cell.getAttribute("data-date");
+          const row = rows.find(r => r.date === date);
+          if (row) showDetail(row);
+        });
+      });
+    }
+
+    function showDetail(row) {
+      const habitHtml = row.habits.map((done, index) => `
+        <div class="review-box">${done ? "✅" : "⬜"} ${habitList[index]}</div>
+      `).join("");
+
+      detailContent.innerHTML = `
+        <div style="font-size:16px;">📅 日期：${row.date}</div>
+        <div class="score-pill">今日得分：${row.score} / 7</div>
+
+        <div style="margin-top:16px;font-size:16px;color:#6d584b;">今日習慣完成</div>
+        <div style="margin-top:8px;">${habitHtml}</div>
+
+        <div style="margin-top:16px;font-size:16px;color:#6d584b;">今日復盤</div>
+        <div class="review-box">✅ 今天做得好的一件事：${row.review_good || "未填寫"}</div>
+        <div class="review-box">❌ 今天可以更好的一件事：${row.review_bad || "未填寫"}</div>
+        <div class="review-box">💡 我可以怎麼想會更好：${row.review_better || "未填寫"}</div>
+
+        <div class="btns" style="margin-top:16px;">
+          <button id="editThisDayBtn" type="button">編輯這一天</button>
+        </div>
+      `;
+
+      detailModal.classList.remove("hidden");
+
+      document.getElementById("editThisDayBtn").addEventListener("click", () => {
+        editingRecord = row;
+        fillFormWithRecord(row);
+        detailModal.classList.add("hidden");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        checkinBtn.disabled = false;
+        showMessage(checkinMsg, `正在編輯 ${row.date} 的紀錄，修改後按「完成今日打卡」即可儲存。`);
+      });
+    }
+
+    function renderStats(rows) {
+      if (!rows.length) {
+        statsWrap.innerHTML = `<div class="msg">還沒有統計資料喔</div>`;
+        if (scoreChart) scoreChart.destroy();
+        if (habitChart) habitChart.destroy();
+        return;
+      }
+
+      const sorted = [...rows].sort((a, b) => a.date.localeCompare(b.date));
+      const recent7 = sorted.slice(-7);
+
+      const habitTotals = Array(7).fill(0);
+      sorted.forEach(item => {
+        item.habits.forEach((done, i) => {
+          if (done) habitTotals[i]++;
+        });
+      });
+
+      const totalPossible = sorted.length * 7;
+      const totalDone = sorted.reduce((sum, item) => sum + item.score, 0);
+      const rate = totalPossible ? Math.round((totalDone / totalPossible) * 100) : 0;
+
+      statsWrap.innerHTML = `
+        <div class="chart-card">
+          <div class="chart-title">累積達成率</div>
+          <div style="text-align:center;font-size:30px;color:#9d6447;">${rate}%</div>
+          <div class="hint">共完成 ${totalDone} / ${totalPossible} 次習慣</div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-title">近 7 次打卡分數</div>
+          <canvas id="scoreChartCanvas"></canvas>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-title">7 個習慣累積完成次數</div>
+          <canvas id="habitChartCanvas"></canvas>
+        </div>
+      `;
+
+      const scoreCtx = document.getElementById("scoreChartCanvas");
+      const habitCtx = document.getElementById("habitChartCanvas");
+
+      if (scoreChart) scoreChart.destroy();
+      if (habitChart) habitChart.destroy();
+
+      scoreChart = new Chart(scoreCtx, {
+        type: "line",
+        data: {
+          labels: recent7.map(item => item.date.slice(5)),
+          datasets: [{
+            label: "每日分數",
+            data: recent7.map(item => item.score),
+            tension: 0.35,
+            fill: false,
+            borderColor: "#d38a67",
+            backgroundColor: "#d38a67"
+          }]
         },
-        scales: {
-          x: {
-            ticks: { color: "#ddd" }
-          },
-          y: {
-            beginAtZero: true,
-            ticks: { color: "#ddd" }
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 7,
+              ticks: { stepSize: 1 }
+            }
           }
         }
-      }
+      });
+
+      habitChart = new Chart(habitCtx, {
+        type: "bar",
+        data: {
+          labels: habitList,
+          datasets: [{
+            label: "完成次數",
+            data: habitTotals,
+            backgroundColor: "#e6b89b",
+            borderColor: "#d38a67",
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    function logout() {
+      localStorage.removeItem("user_id");
+      localStorage.removeItem("nickname");
+      currentRows = [];
+      todayExistingRecord = null;
+      editingRecord = null;
+      clearTodayForm();
+      historyWrap.innerHTML = "";
+      statsWrap.innerHTML = "";
+      mainPage.classList.add("hidden");
+      loginPage.classList.remove("hidden");
+      nicknameInput.value = "";
+      pinInput.value = "";
+      showMessage(loginMsg, "已登出");
+      showMessage(checkinMsg, "");
+    }
+
+    loginBtn.addEventListener("click", loginUser);
+    registerBtn.addEventListener("click", registerUser);
+    checkinBtn.addEventListener("click", handleCheckinSubmit);
+    logoutBtn.addEventListener("click", logout);
+    loadHistoryBtn.addEventListener("click", refreshAllViews);
+    loadStatsBtn.addEventListener("click", refreshAllViews);
+    closeDetailBtn.addEventListener("click", () => detailModal.classList.add("hidden"));
+    detailModal.addEventListener("click", (e) => {
+      if (e.target === detailModal) detailModal.classList.add("hidden");
     });
-  }
 
-  async function loadStats() {
-    statsWrap.innerHTML = `<div class="msg">統計分析中...</div>`;
-
-    try {
-      const rows = await fetchHistoryData();
-      renderStats(rows);
-    } catch (error) {
-      statsWrap.innerHTML = `<div class="msg" style="color:#ff9d9d;">${error.message}</div>`;
-      console.error(error);
+    if (localStorage.getItem("user_id")) {
+      enterMainPage();
+    } else {
+      renderHabits([]);
     }
-  }
-
-  loginBtn.addEventListener("click", loginUser);
-  registerBtn.addEventListener("click", registerUser);
-  checkinBtn.addEventListener("click", submitCheckin);
-  logoutBtn.addEventListener("click", logout);
-  loadHistoryBtn.addEventListener("click", loadHistory);
-  loadStatsBtn.addEventListener("click", loadStats);
-  closeDetailBtn.addEventListener("click", () => {
-    detailModal.classList.add("hidden");
-  });
-
-  detailModal.addEventListener("click", (e) => {
-    if (e.target === detailModal) {
-      detailModal.classList.add("hidden");
-    }
-  });
-
-  if (localStorage.getItem("user_id")) {
-    showCheckinPage();
-  }
-</script>
+  </script>
+</body>
+</html>
