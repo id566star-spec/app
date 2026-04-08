@@ -492,7 +492,7 @@
   </div>
 
   <script>
-    const API = "https://script.google.com/macros/s/AKfycbyz6UiP_YVZeugH8bFjUF7TnE6iEQswhEwINjZXrkj_y_whh36_I-Y5OORJnz57r0UB/exec";
+    const API = "https://script.google.com/macros/s/AKfycbzTZX4tKZAARcs3T9dl1ikQJj5UBlI4aHRFJGG_EBXnAiz9ZEZIA-jrsyDZyh4XrGTJ/exec";
 
     const quotes = [
       "不要小心計算如何，先把今天挺住就夠好了。",
@@ -564,6 +564,19 @@
       const m = String(date.getMonth() + 1).padStart(2, "0");
       const d = String(date.getDate()).padStart(2, "0");
       return `${y}-${m}-${d}`;
+    }
+
+    function normalizeDateString(raw) {
+      if (!raw) return "";
+      const s = String(raw).trim().replace(/\//g, "-");
+      const parts = s.split("-");
+      if (parts.length === 3) {
+        const y = parts[0];
+        const m = String(parts[1]).padStart(2, "0");
+        const d = String(parts[2]).padStart(2, "0");
+        return `${y}-${m}-${d}`;
+      }
+      return s;
     }
 
     function getTodayStr() {
@@ -645,7 +658,7 @@
       return rows.map(row => ({
         id: String(row[0] || "").trim(),
         user_id: String(row[1] || "").trim(),
-        date: String(row[2] || "").trim(),
+        date: normalizeDateString(row[2]),
         habits: [row[3], row[4], row[5], row[6], row[7], row[8], row[9]].map(v => {
           return v === true || v === "TRUE" || v === "true";
         }),
@@ -767,7 +780,7 @@
     async function refreshAllViews() {
       currentRows = await fetchHistoryData();
       const today = getTodayStr();
-      todayExistingRecord = currentRows.find(r => r.date === today) || null;
+      todayExistingRecord = currentRows.find(r => String(r.date).trim() === today) || null;
 
       if (!editingRecord) {
         if (todayExistingRecord) {
@@ -820,7 +833,18 @@
         if (data.status === "success") {
           showMessage(checkinMsg, `今日打卡成功，得分 ${data.score}/7 ✨`);
           editingRecord = null;
-          await refreshAllViews();
+
+          currentRows = await fetchHistoryData();
+          const today = getTodayStr();
+          todayExistingRecord = currentRows.find(r => String(r.date).trim() === today) || null;
+
+          renderCalendar(currentRows);
+          renderStats(currentRows);
+          updateTodayStatus();
+
+          if (todayExistingRecord) {
+            fillFormWithRecord(todayExistingRecord);
+          }
         } else {
           showMessage(checkinMsg, data.message || "打卡失敗", true);
         }
@@ -913,7 +937,7 @@
       const map = {};
       rows.forEach(item => {
         if (item.date) {
-          map[item.date] = item;
+          map[String(item.date).trim()] = item;
         }
       });
 
@@ -960,7 +984,7 @@
       historyWrap.querySelectorAll(".day-cell[data-date]").forEach(cell => {
         cell.addEventListener("click", () => {
           const date = cell.getAttribute("data-date");
-          const row = rows.find(r => r.date === date);
+          const row = rows.find(r => String(r.date).trim() === date);
           if (row) {
             showDetail(row);
           }
