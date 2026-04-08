@@ -227,11 +227,12 @@
 
     .day-tile.clickable{
       cursor:pointer;
+      pointer-events:auto;
     }
 
     .day-tile.clickable:hover{
-      transform:translateY(-2px);
-      border-color:rgba(255,255,255,.16);
+      transform:translateY(-2px) scale(1.01);
+      border-color:rgba(255,255,255,.18);
     }
 
     .day-tile .tile-icon{
@@ -809,10 +810,6 @@
     const badgeWrap = document.getElementById("badgeWrap");
     const leaderboardWrap = document.getElementById("leaderboardWrap");
 
-    const detailModal = document.getElementById("detailModal");
-    const detailContent = document.getElementById("detailContent");
-    const closeDetailBtn = document.getElementById("closeDetailBtn");
-
     let scoreChart = null;
     let habitChart = null;
     let currentRows = [];
@@ -839,7 +836,7 @@
       const arr = ["零","一","二","三","四","五","六","七","八","九","十",
         "十一","十二","十三","十四","十五","十六","十七","十八","十九","二十",
         "二十一","二十二","二十三","二十四","二十五","二十六","二十七","二十八","二十九","三十"];
-      return arr[num] || num;
+      return arr[num] || String(num);
     }
 
     function normalizeDateString(raw) {
@@ -861,29 +858,59 @@
 
     function getChallengeStartDate() {
       let saved = localStorage.getItem("challenge_start_date");
-      if (!saved) {
-        saved = getTodayStr();
-        localStorage.setItem("challenge_start_date", saved);
+      const today = getTodayStr();
+
+      if (!saved || saved === "undefined" || saved === "null") {
+        localStorage.setItem("challenge_start_date", today);
+        return today;
       }
+
+      saved = normalizeDateString(saved);
+
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(saved)) {
+        localStorage.setItem("challenge_start_date", today);
+        return today;
+      }
+
       return saved;
     }
 
     function setChallengeStartDateFromRows(rows) {
-      if (!rows.length) return;
-      const sorted = [...rows]
-        .map(r => r.date)
-        .filter(Boolean)
-        .sort((a, b) => a.localeCompare(b));
-      if (!sorted.length) return;
-      const existing = localStorage.getItem("challenge_start_date");
-      if (!existing || sorted[0] < existing) {
-        localStorage.setItem("challenge_start_date", sorted[0]);
+      if (!rows || !rows.length) {
+        const today = getTodayStr();
+        localStorage.setItem("challenge_start_date", today);
+        return;
       }
+
+      const sorted = rows
+        .map(r => normalizeDateString(r.date))
+        .filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d))
+        .sort((a, b) => a.localeCompare(b));
+
+      if (!sorted.length) {
+        const today = getTodayStr();
+        localStorage.setItem("challenge_start_date", today);
+        return;
+      }
+
+      localStorage.setItem("challenge_start_date", sorted[0]);
     }
 
     function diffDays(dateA, dateB) {
-      const a = new Date(dateA + "T00:00:00");
-      const b = new Date(dateB + "T00:00:00");
+      const aStr = normalizeDateString(dateA);
+      const bStr = normalizeDateString(dateB);
+
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(aStr) || !/^\d{4}-\d{2}-\d{2}$/.test(bStr)) {
+        return 0;
+      }
+
+      const a = new Date(aStr + "T00:00:00");
+      const b = new Date(bStr + "T00:00:00");
+
+      if (isNaN(a.getTime()) || isNaN(b.getTime())) {
+        return 0;
+      }
+
       const diff = b.getTime() - a.getTime();
       return Math.floor(diff / 86400000);
     }
@@ -1016,8 +1043,10 @@
     function updateHero(rows) {
       const startDate = getChallengeStartDate();
       const today = getTodayStr();
+
       let dayNum = diffDays(startDate, today) + 1;
-      if (dayNum < 1) dayNum = 1;
+
+      if (!Number.isFinite(dayNum) || dayNum < 1) dayNum = 1;
       if (dayNum > 30) dayNum = 30;
 
       heroDayBig.textContent = `Day ${dayNum}`;
@@ -1272,7 +1301,6 @@
         if (data.status === "success") {
           showMessage(checkinMsg, `已更新 ${dateStr} 的打卡紀錄，得分 ${data.score}/7`);
           editingRecord = null;
-          detailModal.classList.add("hidden");
           await refreshAllViews();
         } else {
           showMessage(checkinMsg, data.message || "更新失敗", true);
@@ -1295,6 +1323,7 @@
     function loadRecordToForm(row) {
       editingRecord = row;
       fillFormWithRecord(row);
+
       checkinBtn.disabled = false;
       todayStatusHint.textContent = `目前正在編輯 ${row.date} 的紀錄，修改後按「完成今日打卡」即可儲存。`;
 
@@ -1313,12 +1342,13 @@
 
       const dayMap = {};
       rows.forEach(item => {
-        const normalized = normalizeDateString(item.date);
-        const dayIndex = diffDays(startDate, normalized) + 1;
+        const normalizedDate = normalizeDateString(item.date);
+        const dayIndex = diffDays(startDate, normalizedDate) + 1;
+
         if (dayIndex >= 1 && dayIndex <= 30) {
           dayMap[dayIndex] = {
             ...item,
-            date: normalized
+            date: normalizedDate
           };
         }
       });
@@ -1373,42 +1403,15 @@
         tile.addEventListener("click", () => {
           const dayNum = Number(tile.getAttribute("data-day"));
           const row = dayMap[dayNum];
-          if (row) {
-            showDetail(row, dayNum);
-          }
+          if (!row) return;
+
+          loadRecordToForm(row);
+
+          showMessage(
+            checkinMsg,
+            `已載入 Day${dayNum}（${row.date}）的紀錄，現在可以直接修改後按「完成今日打卡」。`
+          );
         });
-      });
-    }
-
-    function showDetail(row, dayNum = null) {
-      const habitHtml = row.habits.map((done, index) => `
-        <div class="review-box">${done ? "✅" : "⬜"} ${index + 1}. ${habitList[index]}</div>
-      `).join("");
-
-      const titleDay = dayNum ? `Day ${dayNum}` : row.date;
-
-      detailContent.innerHTML = `
-        <div style="font-size:16px;">📅 ${titleDay}｜${row.date}</div>
-        <div class="score-pill">今日得分：${row.score} / 7</div>
-
-        <div style="margin-top:16px;font-size:16px;color:#fff0db;">今日習慣完成</div>
-        <div style="margin-top:8px;">${habitHtml}</div>
-
-        <div style="margin-top:16px;font-size:16px;color:#fff0db;">今日復盤</div>
-        <div class="review-box">✅ 今天做得好的一件事：${row.review_good || "未填寫"}</div>
-        <div class="review-box">❌ 今天可以更好的一件事：${row.review_bad || "未填寫"}</div>
-        <div class="review-box">💡 我可以怎麼想會更好：${row.review_better || "未填寫"}</div>
-
-        <div class="btns" style="margin-top:16px;">
-          <button id="editThisDayBtn" type="button">編輯這一天</button>
-        </div>
-      `;
-
-      detailModal.classList.remove("hidden");
-
-      document.getElementById("editThisDayBtn").addEventListener("click", () => {
-        loadRecordToForm(row);
-        detailModal.classList.add("hidden");
       });
     }
 
@@ -1627,10 +1630,6 @@
       showMessage(checkinMsg, "資料重新整理中...");
       await refreshAllViews();
       showMessage(checkinMsg, "資料已更新");
-    });
-    closeDetailBtn.addEventListener("click", () => detailModal.classList.add("hidden"));
-    detailModal.addEventListener("click", (e) => {
-      if (e.target === detailModal) detailModal.classList.add("hidden");
     });
 
     if (localStorage.getItem("user_id")) {
