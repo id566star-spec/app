@@ -1,1193 +1,788 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>30天打卡身心靈成長競賽</title>
-  <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    * { box-sizing: border-box; }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>10天身心靈成長競賽</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+/* ── 重置 & 根變數 ────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --pink: #FF8FAB; --pink-light: #FFD6E0; --pink-pale: #FFF0F5;
+  --mint: #7ECDA8; --mint-light: #C8EFE0; --mint-pale: #F0FBF5;
+  --peach: #FFAD7D; --peach-light: #FFE4CC;
+  --lavender: #B39DDB; --lavender-light: #EDE7F6;
+  --yellow: #FFCC66; --yellow-light: #FFF8E1;
+  --text: #4A3F5C; --text-soft: #8B7FA8; --text-muted: #B8B0CC;
+  --white: #FFFFFF; --bg: #FFF8FC;
+  --shadow: 0 4px 20px rgba(180,140,180,0.15);
+  --shadow-card: 0 2px 12px rgba(180,140,180,0.12);
+  --radius: 16px; --radius-lg: 20px;
+}
 
-    body {
-      margin: 0;
-      font-family: "ZCOOL KuaiLe", cursive;
-      background: #4a2400;
-      color: #f7eadf;
-    }
+/* ── 基礎 ────────────────────────────────────────────── */
+html, body { height: 100%; background: var(--bg); font-family: 'Nunito', 'Noto Sans TC', sans-serif; color: var(--text); }
+.app { max-width: 430px; margin: 0 auto; min-height: 100vh; position: relative; padding-bottom: 80px; }
 
-    .top {
-      background: linear-gradient(180deg, #6a3300 0%, #5a2b00 100%);
-      padding: 20px 16px 16px;
-      text-align: center;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-    }
+/* ── 底部導覽 ─────────────────────────────────────────── */
+.nav {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 430px;
+  display: flex; background: white;
+  border-top: 1px solid #F5EEF8;
+  box-shadow: 0 -4px 20px rgba(180,140,180,0.12);
+  z-index: 200;
+}
+.nav-btn {
+  flex: 1; padding: 10px 4px 12px; background: none; border: none; cursor: pointer;
+  font-size: 10px; font-family: 'Nunito', sans-serif; color: var(--text-muted);
+  font-weight: 700; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  border-top: 3px solid transparent; transition: color 0.2s;
+}
+.nav-btn.active { color: var(--pink); border-top-color: var(--pink); }
+.nav-icon { font-size: 20px; line-height: 1; }
 
-    .top h1 {
-      margin: 0;
-      font-size: 28px;
-      line-height: 1.4;
-      color: #fff1df;
-    }
+/* ── 頁面切換 ─────────────────────────────────────────── */
+.page { display: none; padding: 0 16px 24px; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-    .top p {
-      margin: 8px 0 0;
-      font-size: 15px;
-      color: #ffd9b7;
-    }
+/* ── 每日金句橫幅 ─────────────────────────────────────── */
+.quote-banner {
+  background: linear-gradient(135deg, #FFB3C6, #C8A8E9, #A8D8CF);
+  border-radius: var(--radius); padding: 14px 18px; margin: 14px 0 16px;
+  text-align: center; position: relative; overflow: hidden;
+}
+.quote-banner::before { content: '✦'; position: absolute; top: 6px; left: 12px; font-size: 16px; opacity: 0.4; color: white; }
+.quote-banner::after  { content: '✦'; position: absolute; bottom: 6px; right: 12px; font-size: 12px; opacity: 0.4; color: white; }
+.quote-text { font-size: 13px; color: white; font-weight: 700; line-height: 1.5; text-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 
-    .wrap {
-      max-width: 430px;
-      margin: 0 auto;
-      padding: 14px 14px 30px;
-    }
+/* ── 報名 / 登入頁 ─────────────────────────────────────── */
+.reg-header { text-align: center; padding: 30px 0 24px; }
+.reg-emoji { font-size: 64px; display: block; margin-bottom: 8px; animation: bounce 2s infinite; }
+@keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+.reg-title { font-size: 26px; font-weight: 800; line-height: 1.3; }
+.reg-subtitle { font-size: 13px; color: var(--text-soft); margin-top: 6px; }
 
-    .card {
-      background: rgba(40, 18, 0, 0.42);
-      border-radius: 22px;
-      padding: 18px 14px 20px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.16);
-      margin-bottom: 16px;
-      border: 1px solid rgba(255,255,255,0.08);
-      backdrop-filter: blur(4px);
-    }
+.card { background: white; border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow-card); border: 1.5px solid #F5EEF8; }
 
-    .section-title {
-      text-align: center;
-      font-size: 22px;
-      margin: 0 0 14px;
-      color: #fff0db;
-    }
+.form-group { margin-bottom: 18px; }
+.form-label { font-size: 12px; font-weight: 700; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: block; }
+.form-input, .form-select {
+  width: 100%; padding: 13px 16px;
+  border: 1.5px solid #EDE7F6; border-radius: 12px;
+  font-size: 15px; font-family: 'Nunito', 'Noto Sans TC', sans-serif;
+  color: var(--text); background: #FDFBFF; outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.form-input:focus, .form-select:focus { border-color: var(--pink); box-shadow: 0 0 0 3px rgba(255,143,171,0.15); }
+.form-select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23B39DDB'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; background-size: 10px; }
 
-    .field {
-      margin-bottom: 14px;
-    }
+.btn-primary {
+  width: 100%; padding: 16px;
+  background: linear-gradient(135deg, var(--pink), #C48BD6);
+  border: none; border-radius: 14px; color: white;
+  font-size: 16px; font-weight: 800; font-family: 'Nunito', sans-serif; cursor: pointer;
+  box-shadow: 0 4px 16px rgba(255,143,171,0.35);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.btn-primary:active { transform: scale(0.97); box-shadow: 0 2px 8px rgba(255,143,171,0.25); }
+.toggle-link { text-align: center; font-size: 13px; color: var(--text-soft); margin-top: 16px; cursor: pointer; }
+.toggle-link span { color: var(--pink); font-weight: 700; }
+.login-form { display: none; }
 
-    .label {
-      font-size: 15px;
-      margin-bottom: 8px;
-      color: #ffd8bb;
-      display: block;
-    }
+/* ── 用戶狀態列 ────────────────────────────────────────── */
+.user-bar { display: flex; align-items: center; justify-content: space-between; padding: 12px 0 0; }
+.user-info { display: flex; align-items: center; gap: 8px; }
+.avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--pink), var(--lavender)); color: white; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; flex-shrink: 0; }
+.user-name { font-weight: 700; color: var(--text); font-size: 15px; }
+.streak-badge { background: var(--yellow-light); color: #9A6500; border-radius: 10px; padding: 5px 12px; font-size: 12px; font-weight: 800; }
 
-    input, textarea {
-      width: 100%;
-      border: none;
-      outline: none;
-      padding: 14px;
-      border-radius: 14px;
-      font-size: 16px;
-      background: rgba(255,255,255,0.12);
-      color: #fff4ea;
-      font-family: inherit;
-    }
+/* ── Day 標題 ────────────────────────────────────────────── */
+.day-header {
+  background: linear-gradient(135deg, #FF8FAB, #C48BD6);
+  border-radius: var(--radius-lg); padding: 20px 20px 18px;
+  margin: 14px 0 16px; text-align: center; color: white;
+  position: relative; overflow: hidden;
+}
+.day-header::before { content: '☁'; position: absolute; top: 10px; left: 16px; font-size: 22px; opacity: 0.25; }
+.day-header::after  { content: '☁'; position: absolute; bottom: 8px; right: 20px; font-size: 15px; opacity: 0.2; }
+.day-num   { font-size: 40px; font-weight: 800; line-height: 1; }
+.day-label { font-size: 13px; opacity: 0.9; margin-top: 2px; font-weight: 600; }
+.day-date  { font-size: 11px; opacity: 0.7; margin-top: 4px; }
+.encourage { font-size: 13px; font-weight: 700; margin-top: 10px; background: rgba(255,255,255,0.2); border-radius: 10px; padding: 8px 14px; }
 
-    textarea {
-      min-height: 92px;
-      resize: vertical;
-    }
+/* ── 區塊標題 ──────────────────────────────────────────── */
+.section-title { font-size: 13px; font-weight: 800; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
 
-    input::placeholder,
-    textarea::placeholder {
-      color: rgba(255, 234, 220, 0.68);
-    }
+/* ── 日曆 ───────────────────────────────────────────────── */
+.calendar { background: white; border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow-card); border: 1.5px solid #F5EEF8; margin-bottom: 16px; }
+.cal-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.cal-day {
+  aspect-ratio: 1; border-radius: 12px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; cursor: pointer;
+  transition: transform 0.2s; border: 1.5px solid transparent;
+  position: relative;
+}
+.cal-day:active { transform: scale(0.93); }
+.cal-day.future    { background: #F5F0FA; color: var(--text-muted); }
+.cal-day.completed { background: linear-gradient(135deg, #C8EFE0, #A8D8CF); color: #2D8F6F; border-color: #7ECDA8; }
+.cal-day.partial   { background: linear-gradient(135deg, #FFE4CC, #FFCC99); color: #CC7A30; border-color: var(--peach); }
+.cal-day.today     { background: linear-gradient(135deg, #FFD6E0, #EDE7F6); border-color: var(--pink); color: var(--pink); }
+.cal-day .cal-star { position: absolute; top: -4px; right: -4px; font-size: 11px; }
+.cal-day-icon { font-size: 16px; margin-bottom: 2px; line-height: 1; }
 
-    .btns {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin-top: 12px;
-    }
+/* ── 習慣打卡 ──────────────────────────────────────────── */
+.habits-card { background: white; border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-card); border: 1.5px solid #F5EEF8; margin-bottom: 16px; }
+.habit-item { display: flex; align-items: center; gap: 12px; padding: 11px 8px; border-bottom: 1px solid #FAF0FC; cursor: pointer; border-radius: 10px; margin: 0 -8px; transition: background 0.15s; }
+.habit-item:last-child { border-bottom: none; }
+.habit-item:active { background: #FFF0F5; }
+.habit-tag { min-width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; flex-shrink: 0; }
+.tag-1{background:#FFD6E0;color:#C04060} .tag-2{background:#C8EFE0;color:#1A6E50}
+.tag-3{background:#EDE7F6;color:#5E35B1} .tag-4{background:#FFF8E1;color:#B07A00}
+.tag-5{background:#E3F2FD;color:#1565C0} .tag-6{background:#FCE4EC;color:#AD1457}
+.tag-7{background:#E8F5E9;color:#2E7D32}
+.habit-content { flex: 1; min-width: 0; }
+.habit-name { font-size: 14px; font-weight: 700; color: var(--text); line-height: 1.3; }
+.habit-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.habit-check {
+  width: 30px; height: 30px; border-radius: 50%; border: 2px solid #E0D6F0;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; flex-shrink: 0; background: white; font-size: 15px;
+}
+.habit-check.checked { background: linear-gradient(135deg, var(--mint), #5ECDA8); border-color: var(--mint); color: white; animation: checkPop 0.3s ease; }
+@keyframes checkPop { 0%{transform:scale(0.6)} 60%{transform:scale(1.2)} 100%{transform:scale(1)} }
 
-    button {
-      border: none;
-      outline: none;
-      cursor: pointer;
-      background: #b96539;
-      color: #fff;
-      border-radius: 16px;
-      padding: 13px 22px;
-      font-size: 18px;
-      font-family: inherit;
-      box-shadow: 0 6px 14px rgba(0,0,0,0.16);
-    }
+/* ── 提交按鈕 ──────────────────────────────────────────── */
+.btn-checkin {
+  width: 100%; padding: 18px;
+  background: linear-gradient(135deg, var(--pink), #C48BD6);
+  border: none; border-radius: var(--radius); color: white;
+  font-size: 17px; font-weight: 800; font-family: 'Nunito', sans-serif;
+  cursor: pointer; box-shadow: 0 6px 20px rgba(255,143,171,0.35);
+  transition: transform 0.15s;
+}
+.btn-checkin:active { transform: scale(0.97); }
+.btn-checkin.submitted { background: linear-gradient(135deg, var(--mint), #5ECDA8); box-shadow: 0 6px 20px rgba(126,205,168,0.35); }
+.submitted-msg { text-align: center; padding: 14px; background: var(--mint-pale); border-radius: 12px; color: #2D8F6F; font-weight: 700; font-size: 14px; margin-top: 12px; }
 
-    button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
+/* ── 進度頁 ─────────────────────────────────────────────── */
+.score-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.score-card { background: white; border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow-card); border: 1.5px solid #F5EEF8; text-align: center; }
+.score-num  { font-size: 34px; font-weight: 800; line-height: 1; }
+.score-sub  { font-size: 13px; color: var(--text-soft); font-weight: 600; }
+.score-lbl  { font-size: 11px; color: var(--text-muted); font-weight: 700; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
 
-    .small-btn {
-      background: #92634d;
-      font-size: 15px;
-      padding: 11px 18px;
-      box-shadow: none;
-    }
+/* 排行榜 */
+.lb-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #FAF0FC; }
+.lb-item:last-child { border-bottom: none; }
+.lb-rank { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; flex-shrink: 0; }
+.rank-1{background:linear-gradient(135deg,#FFD700,#FFA500);color:white}
+.rank-2{background:linear-gradient(135deg,#C0C0C0,#A8A8A8);color:white}
+.rank-3{background:linear-gradient(135deg,#CD7F32,#B87333);color:white}
+.rank-other{background:#F0EBF8;color:var(--text-soft)}
+.lb-name-wrap { flex: 1; min-width: 0; }
+.lb-name { font-size: 14px; font-weight: 700; color: var(--text); }
+.lb-you { font-size: 10px; background: var(--pink-light); color: var(--pink); border-radius: 6px; padding: 2px 6px; font-weight: 700; margin-left: 4px; }
+.lb-bar-wrap { height: 4px; background: #F0EBF8; border-radius: 2px; margin-top: 5px; }
+.lb-bar { height: 4px; background: linear-gradient(90deg, var(--pink), var(--lavender)); border-radius: 2px; transition: width 0.8s ease; }
+.lb-score-val { font-size: 16px; font-weight: 800; color: var(--lavender); flex-shrink: 0; }
 
-    .outline-btn {
-      background: transparent;
-      color: #ffd7bd;
-      border: 1px solid rgba(255,255,255,0.18);
-      box-shadow: none;
-    }
+/* 個人復盤 */
+.review-item { margin-bottom: 14px; }
+.review-lbl { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 12px; font-weight: 700; color: var(--text-soft); }
+.progress-bar-wrap { height: 10px; background: #F0EBF8; border-radius: 5px; overflow: hidden; }
+.progress-bar { height: 10px; border-radius: 5px; transition: width 0.8s ease; }
+.pb-1{background:linear-gradient(90deg,#FF8FAB,#FFB3C6)} .pb-2{background:linear-gradient(90deg,#7ECDA8,#A8E6C8)}
+.pb-3{background:linear-gradient(90deg,#B39DDB,#D1C4E9)} .pb-4{background:linear-gradient(90deg,#FFAD7D,#FFCC99)}
+.pb-5{background:linear-gradient(90deg,#64B5F6,#90CAF9)} .pb-6{background:linear-gradient(90deg,#E57399,#F48FB1)}
+.pb-7{background:linear-gradient(90deg,#81C784,#A5D6A7)}
 
-    .msg {
-      margin-top: 12px;
-      text-align: center;
-      font-size: 14px;
-      min-height: 22px;
-      color: #ffd4ba;
-      line-height: 1.6;
-      white-space: pre-wrap;
-    }
+/* ── 成果頁 ─────────────────────────────────────────────── */
+.result-header { text-align: center; padding: 24px 0 16px; }
+.trophy-anim { font-size: 72px; display: block; animation: trophyWave 3s ease-in-out infinite; }
+@keyframes trophyWave { 0%,100%{transform:rotate(-5deg) scale(1)} 50%{transform:rotate(5deg) scale(1.06)} }
+.result-username { font-size: 22px; font-weight: 800; margin-top: 8px; }
+.days-pill { display: inline-block; background: var(--pink-light); color: var(--pink); border-radius: 20px; padding: 4px 14px; font-size: 12px; font-weight: 800; margin-top: 6px; }
 
-    .hidden {
-      display: none !important;
-    }
+.total-banner { background: linear-gradient(135deg, #FFB3C6, #C8A8E9, #A8D8CF); border-radius: var(--radius-lg); padding: 24px; text-align: center; margin-bottom: 20px; color: white; }
+.total-big  { font-size: 60px; font-weight: 800; line-height: 1; text-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.total-lbl  { font-size: 14px; opacity: 0.9; font-weight: 700; margin-top: 4px; }
+.total-rank { font-size: 12px; opacity: 0.8; margin-top: 6px; }
+.total-rank strong { font-size: 16px; }
 
-    .quote {
-      text-align: center;
-      margin: 0 0 14px;
-      color: #ffe0c6;
-      font-size: 15px;
-      line-height: 1.7;
-    }
+.analysis-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.analysis-card { background: white; border-radius: 14px; padding: 14px; box-shadow: var(--shadow-card); border: 1.5px solid #F5EEF8; text-align: center; }
+.analysis-icon  { font-size: 28px; display: block; margin-bottom: 6px; }
+.analysis-score { font-size: 22px; font-weight: 800; color: var(--pink); }
+.analysis-name  { font-size: 11px; color: var(--text-soft); font-weight: 700; margin-top: 2px; }
 
-    #calendarQuote {
-      margin-bottom: 16px;
-      color: #ffe0c6;
-    }
+.badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.badge { background: var(--pink-pale); border: 1.5px solid var(--pink-light); border-radius: 12px; padding: 7px 14px; font-size: 12px; font-weight: 700; color: var(--pink); display: flex; align-items: center; gap: 6px; }
 
-    .habit-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: rgba(255,255,255,0.08);
-      padding: 13px 14px;
-      border-radius: 14px;
-      margin-bottom: 10px;
-      font-size: 15px;
-      color: #fff0e3;
-      gap: 12px;
-    }
+/* ── Toast 提示 ─────────────────────────────────────────── */
+.toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-80px); background: linear-gradient(135deg,var(--mint),#5ECDA8); color: white; padding: 12px 24px; border-radius: 40px; font-size: 14px; font-weight: 700; box-shadow: 0 6px 20px rgba(126,205,168,0.4); transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1); z-index: 999; white-space: nowrap; }
+.toast.show { transform: translateX(-50%) translateY(0); }
 
-    .habit-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex: 1;
-      min-width: 0;
-    }
-
-    .habit-badge {
-      width: 28px;
-      height: 28px;
-      flex: 0 0 28px;
-      border-radius: 999px;
-      background: rgba(255, 176, 123, 0.22);
-      border: 1px solid rgba(255, 176, 123, 0.5);
-      color: #fff3e8;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 13px;
-    }
-
-    .habit-text {
-      flex: 1;
-      line-height: 1.4;
-    }
-
-    .habit-item input[type="checkbox"] {
-      width: 24px;
-      height: 24px;
-      accent-color: #ff9f66;
-      flex: 0 0 24px;
-    }
-
-    .sub-card {
-      background: rgba(255,255,255,0.06);
-      border-radius: 18px;
-      padding: 14px;
-      margin-top: 14px;
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .sub-title {
-      font-size: 18px;
-      margin-bottom: 12px;
-      color: #fff0db;
-      text-align: center;
-    }
-
-    .calendar-box {
-      background: rgba(32, 14, 0, 0.34);
-      border-radius: 18px;
-      padding: 14px 10px;
-      margin-top: 14px;
-      border: 1px solid rgba(255,255,255,0.10);
-    }
-
-    .calendar-head {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 6px;
-      margin-bottom: 10px;
-      text-align: center;
-      color: #ffe2cb;
-      font-size: 13px;
-    }
-
-    .calendar-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 6px;
-    }
-
-    .day-cell {
-      min-height: 76px;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.08);
-      padding: 6px 3px;
-      text-align: center;
-      cursor: pointer;
-      font-size: 12px;
-      color: #fff1e4;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      border: 1px solid transparent;
-      transition: 0.2s ease;
-    }
-
-    .day-cell:hover {
-      border-color: rgba(255,255,255,0.18);
-      transform: translateY(-1px);
-    }
-
-    .day-cell.empty {
-      background: transparent;
-      cursor: default;
-      border-color: transparent;
-      transform: none;
-    }
-
-    .day-num {
-      font-size: 12px;
-      margin-bottom: 4px;
-    }
-
-    .day-emoji {
-      font-size: 20px;
-      line-height: 1;
-      min-height: 22px;
-    }
-
-    .day-score {
-      font-size: 11px;
-      margin-top: 4px;
-      color: #ffd5b2;
-      line-height: 1.2;
-    }
-
-    .today-mark {
-      border-color: #ff9f66;
-      background: rgba(255, 159, 102, 0.12);
-    }
-
-    .has-record {
-      background: rgba(255, 213, 178, 0.12);
-      border: 1px solid rgba(255, 159, 102, 0.45);
-      box-shadow: inset 0 0 0 1px rgba(255, 159, 102, 0.10);
-    }
-
-    .no-record {
-      opacity: 0.78;
-    }
-
-    .no-record .day-emoji {
-      opacity: 0.78;
-    }
-
-    .record-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: #ffb07b;
-      margin-top: 4px;
-    }
-
-    .empty-dot {
-      background: rgba(255,255,255,0.18);
-    }
-
-    .chart-card {
-      background: rgba(32, 14, 0, 0.34);
-      border-radius: 18px;
-      padding: 14px;
-      margin-top: 14px;
-      border: 1px solid rgba(255,255,255,0.10);
-    }
-
-    .chart-title {
-      font-size: 17px;
-      margin-bottom: 12px;
-      text-align: center;
-      color: #fff0db;
-    }
-
-    .review-box {
-      background: rgba(255,255,255,0.08);
-      border-radius: 14px;
-      padding: 10px 12px;
-      margin-top: 8px;
-      line-height: 1.7;
-      color: #fff0e2;
-      font-size: 14px;
-      word-break: break-word;
-    }
-
-    .modal-mask {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.45);
-      z-index: 999;
-      padding: 16px;
-      overflow: auto;
-    }
-
-    .modal-card {
-      max-width: 430px;
-      margin: 30px auto;
-      background: #5a2b00;
-      border-radius: 22px;
-      padding: 18px 14px 20px;
-      box-shadow: 0 16px 40px rgba(0,0,0,0.22);
-      border: 1px solid rgba(255,255,255,0.10);
-    }
-
-    .modal-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-
-    .modal-title {
-      font-size: 22px;
-      color: #fff0db;
-    }
-
-    .score-pill {
-      display: inline-block;
-      background: rgba(255, 214, 188, 0.12);
-      color: #ffd7bd;
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 14px;
-      margin-top: 6px;
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .hint {
-      text-align: center;
-      color: #ffd6bb;
-      font-size: 13px;
-      margin-top: 8px;
-      line-height: 1.6;
-    }
-  </style>
+/* ── 載入動畫 ────────────────────────────────────────────── */
+.loading { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 20px; color: var(--text-soft); font-size: 14px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--pink); animation: dotPulse 1.2s infinite ease-in-out; }
+.dot:nth-child(2){animation-delay:0.2s} .dot:nth-child(3){animation-delay:0.4s}
+@keyframes dotPulse{0%,80%,100%{transform:scale(0.7);opacity:0.5}40%{transform:scale(1.1);opacity:1}}
+</style>
 </head>
 <body>
-  <div class="top">
-    <h1>🌱 30天身心靈挑戰</h1>
-    <p id="quoteText">每天都值得變得更美好 💛</p>
+
+<div class="app">
+
+<!-- ══ 底部導覽列 ══════════════════════════════════════════ -->
+<nav class="nav">
+  <button class="nav-btn" id="nav-register" onclick="showPage('register')">
+    <span class="nav-icon">🌸</span>報名
+  </button>
+  <button class="nav-btn active" id="nav-checkin" onclick="showPage('checkin')">
+    <span class="nav-icon">✅</span>打卡
+  </button>
+  <button class="nav-btn" id="nav-progress" onclick="showPage('progress')">
+    <span class="nav-icon">📊</span>進度
+  </button>
+  <button class="nav-btn" id="nav-results" onclick="showPage('results')">
+    <span class="nav-icon">🏆</span>成果
+  </button>
+</nav>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- ══ 報名頁 ══════════════════════════════════════════════ -->
+<div class="page" id="page-register">
+  <div class="reg-header">
+    <span class="reg-emoji">🌱</span>
+    <div class="reg-title">10天身心靈<br>成長競賽</div>
+    <div class="reg-subtitle">與夥伴一起蛻變，成為更好的自己 ✨</div>
   </div>
 
-  <div class="wrap">
-    <div class="card" id="loginPage">
-      <div class="section-title">登入 / 註冊</div>
-
-      <div class="field">
-        <label class="label" for="nickname">暱稱</label>
-        <input id="nickname" type="text" placeholder="請輸入你的暱稱">
+  <div class="card">
+    <div id="register-form">
+      <div class="form-group">
+        <label class="form-label">你的暱稱</label>
+        <input class="form-input" type="text" id="reg-name" placeholder="輸入你的暱稱 🌸" />
       </div>
-
-      <div class="field">
-        <label class="label" for="pin">PIN（4位數）</label>
-        <input id="pin" type="password" maxlength="4" inputmode="numeric" placeholder="請輸入 4 位數 PIN">
+      <div class="form-group">
+        <label class="form-label">電子信箱</label>
+        <input class="form-input" type="email" id="reg-email" placeholder="your@email.com" />
       </div>
-
-      <div class="btns">
-        <button id="loginBtn" type="button">登入</button>
-        <button id="registerBtn" type="button">註冊</button>
+      <div class="form-group">
+        <label class="form-label">你最想改變的是？</label>
+        <select class="form-select" id="reg-goal">
+          <option value="">請選擇 ✨</option>
+          <option value="mindset">思維模式升級</option>
+          <option value="health">身體健康管理</option>
+          <option value="emotion">情緒穩定成長</option>
+          <option value="productivity">效率與專注力</option>
+          <option value="relationship">人際關係提升</option>
+        </select>
       </div>
-
-      <div class="msg" id="loginMsg"></div>
+      <button class="btn-primary" onclick="doRegister()">✦ 加入成長旅程 ✦</button>
+      <div class="toggle-link" onclick="toggleLoginReg()">已有帳號？<span>點我登入</span></div>
     </div>
 
-    <div class="hidden" id="mainPage">
-      <div class="card">
-        <div class="section-title">月曆檢視</div>
-        <div class="quote" id="calendarQuote">今天也要溫柔地陪自己走一段路 ✨</div>
-        <div id="historyWrap"></div>
+    <div class="login-form" id="login-form">
+      <div class="form-group">
+        <label class="form-label">你的暱稱</label>
+        <input class="form-input" type="text" id="login-name" placeholder="輸入你的暱稱 🌸" />
       </div>
+      <button class="btn-primary" onclick="doLogin()">🌟 開始打卡</button>
+      <div class="toggle-link" onclick="toggleLoginReg()">還沒加入？<span>點我報名</span></div>
+    </div>
+  </div>
+</div>
 
-      <div class="card">
-        <div class="section-title">今日打卡</div>
-        <div class="quote" id="helloText"></div>
-        <div id="todayStatusHint" class="hint"></div>
+<!-- ══ 打卡頁 ══════════════════════════════════════════════ -->
+<div class="page active" id="page-checkin">
+  <!-- 用戶列 -->
+  <div class="user-bar">
+    <div class="user-info">
+      <div class="avatar" id="user-avatar">小花</div>
+      <span class="user-name" id="user-display">小花</span>
+    </div>
+    <div class="streak-badge" id="streak-badge">🔥 3天連續</div>
+  </div>
 
-        <div id="habitsBox"></div>
+  <!-- 每日金句 -->
+  <div class="quote-banner">
+    <div class="quote-text" id="daily-quote">「你每天的努力，都是在為未來的自己種下美麗的種子。🌱」</div>
+  </div>
 
-        <div class="sub-card">
-          <div class="sub-title">🌙 今日復盤</div>
+  <!-- Day 標題 -->
+  <div class="day-header">
+    <div class="day-num" id="day-num">Day 3</div>
+    <div class="day-label" id="day-label-cn">第三天</div>
+    <div class="day-date" id="today-date"></div>
+    <div class="encourage" id="encourage-text">✨ 持續累積，你正在改變！✨</div>
+  </div>
 
-          <div class="field">
-            <label class="label" for="reviewGood">✅ 今天做得好的一件事</label>
-            <textarea id="reviewGood" placeholder="哪怕只是小事，也值得被看見 🌱"></textarea>
-          </div>
+  <!-- 挑戰日曆 -->
+  <div class="section-title">🗓 挑戰日曆</div>
+  <div class="calendar">
+    <div class="cal-grid" id="cal-grid"></div>
+  </div>
 
-          <div class="field">
-            <label class="label" for="reviewBad">❌ 今天可以更好的一件事</label>
-            <textarea id="reviewBad" placeholder="不批判自己，只是觀察 💛"></textarea>
-          </div>
+  <!-- 習慣打卡 -->
+  <div class="section-title">📋 今日成功思維打卡</div>
+  <div class="habits-card" id="habits-container"></div>
 
-          <div class="field" style="margin-bottom:0;">
-            <label class="label" for="reviewBetter">💡 我可以怎麼想會更好？</label>
-            <textarea id="reviewBetter" placeholder="一個小小的改變就夠了 ✨"></textarea>
-          </div>
-        </div>
+  <!-- 提交 -->
+  <button class="btn-checkin" id="submit-btn" onclick="submitCheckin()">
+    💫 送出今日打卡
+  </button>
+  <div id="submitted-msg" style="display:none" class="submitted-msg">
+    🎉 太棒了！今日打卡完成！繼續加油！
+  </div>
+</div>
 
-        <div class="btns">
-          <button id="checkinBtn" type="button">完成今日打卡</button>
-        </div>
+<!-- ══ 進度頁 ══════════════════════════════════════════════ -->
+<div class="page" id="page-progress">
+  <!-- 每日金句 -->
+  <div class="quote-banner" style="margin-top:14px">
+    <div class="quote-text">「每一個小習慣，都是成功的基石。堅持，你就是最閃耀的那顆星！⭐」</div>
+  </div>
 
-        <div class="msg" id="checkinMsg"></div>
-
-        <div class="btns">
-          <button class="small-btn" id="refreshBtn" type="button">重新整理資料</button>
-          <button class="small-btn outline-btn" id="logoutBtn" type="button">登出</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="section-title">成果統計</div>
-        <div id="statsWrap"></div>
-      </div>
+  <!-- 今日得分 -->
+  <div class="section-title">⚡ 今日得分</div>
+  <div class="score-grid">
+    <div class="score-card">
+      <div class="score-num" style="color:var(--pink)" id="today-score-disp">5</div>
+      <div class="score-sub">/ 7 分</div>
+      <div class="score-lbl">今日得分</div>
+    </div>
+    <div class="score-card">
+      <div class="score-num" style="color:var(--lavender)" id="total-score-disp">41</div>
+      <div class="score-sub">/ 70 分</div>
+      <div class="score-lbl">累積得分</div>
     </div>
   </div>
 
-  <div id="detailModal" class="modal-mask hidden">
-    <div class="modal-card">
-      <div class="modal-top">
-        <div class="modal-title">當日紀錄</div>
-        <button class="small-btn" id="closeDetailBtn" type="button">關閉</button>
-      </div>
-      <div id="detailContent"></div>
-    </div>
+  <!-- 排行榜 -->
+  <div class="section-title">🏆 排行榜</div>
+  <div class="card" id="leaderboard-wrap" style="margin-bottom:16px"></div>
+
+  <!-- 個人復盤 -->
+  <div class="section-title">🌟 個人復盤</div>
+  <div class="card" id="review-wrap" style="margin-bottom:16px"></div>
+</div>
+
+<!-- ══ 成果頁 ══════════════════════════════════════════════ -->
+<div class="page" id="page-results">
+  <div class="result-header">
+    <span class="trophy-anim">🏆</span>
+    <div class="result-username" id="result-name">小花的成果</div>
+    <span class="days-pill">10天挑戰完成 🎊</span>
   </div>
 
-  <script>
-    const API = "https://script.google.com/macros/s/AKfycbzTZX4tKZAARcs3T9dl1ikQJj5UBlI4aHRFJGG_EBXnAiz9ZEZIA-jrsyDZyh4XrGTJ/exec";
-
-    const quotes = [
-      "不要小心計算如何，先把今天挺住就夠好了。",
-      "持續不是逼自己，而是每天都溫柔地再試一次。",
-      "小小的完成，也是在替未來的自己鋪路。",
-      "今天的你，不需要完美，只需要前進一點點。",
-      "你願意回來照顧自己，已經很棒了。"
-    ];
-
-    const calendarQuotes = [
-      "今天也要溫柔地陪自己走一段路 ✨",
-      "你每一次打卡，都是在照顧未來的自己 🌱",
-      "慢慢來也沒關係，持續就是很厲害的事 💛",
-      "有做到的日子值得開心，沒做到的日子也值得被理解 🌷",
-      "你不是在追趕誰，你是在好好成為自己 ☀️"
-    ];
-
-    const habitList = [
-      "早起 10 分鐘",
-      "喝足夠的水",
-      "運動 / 伸展",
-      "閱讀 10 分鐘",
-      "感恩一件事",
-      "正念安靜一下",
-      "鼓勵自己一句話"
-    ];
-
-    const nicknameInput = document.getElementById("nickname");
-    const pinInput = document.getElementById("pin");
-    const loginBtn = document.getElementById("loginBtn");
-    const registerBtn = document.getElementById("registerBtn");
-    const loginMsg = document.getElementById("loginMsg");
-
-    const mainPage = document.getElementById("mainPage");
-    const loginPage = document.getElementById("loginPage");
-    const helloText = document.getElementById("helloText");
-    const quoteText = document.getElementById("quoteText");
-    const calendarQuote = document.getElementById("calendarQuote");
-    const habitsBox = document.getElementById("habitsBox");
-    const todayStatusHint = document.getElementById("todayStatusHint");
-
-    const reviewGood = document.getElementById("reviewGood");
-    const reviewBad = document.getElementById("reviewBad");
-    const reviewBetter = document.getElementById("reviewBetter");
-
-    const checkinBtn = document.getElementById("checkinBtn");
-    const checkinMsg = document.getElementById("checkinMsg");
-    const logoutBtn = document.getElementById("logoutBtn");
-    const refreshBtn = document.getElementById("refreshBtn");
-
-    const historyWrap = document.getElementById("historyWrap");
-    const statsWrap = document.getElementById("statsWrap");
-
-    const detailModal = document.getElementById("detailModal");
-    const detailContent = document.getElementById("detailContent");
-    const closeDetailBtn = document.getElementById("closeDetailBtn");
-
-    let scoreChart = null;
-    let habitChart = null;
-    let currentRows = [];
-    let todayExistingRecord = null;
-    let editingRecord = null;
-
-    quoteText.textContent = quotes[Math.floor(Math.random() * quotes.length)];
-    calendarQuote.textContent = calendarQuotes[Math.floor(Math.random() * calendarQuotes.length)];
-
-    function formatDateToYMD(date) {
-      const y = date.getFullYear();
-      const m = String(date.getMonth() + 1).padStart(2, "0");
-      const d = String(date.getDate()).padStart(2, "0");
-      return `${y}-${m}-${d}`;
-    }
-
-    function normalizeDateString(raw) {
-      if (!raw) return "";
-      const s = String(raw).trim().replace(/\//g, "-");
-      const parts = s.split("-");
-      if (parts.length === 3) {
-        const y = parts[0];
-        const m = String(parts[1]).padStart(2, "0");
-        const d = String(parts[2]).padStart(2, "0");
-        return `${y}-${m}-${d}`;
-      }
-      return s;
-    }
-
-    function getTodayStr() {
-      return formatDateToYMD(new Date());
-    }
-
-    function renderHabits(selected = []) {
-      habitsBox.innerHTML = "";
-      habitList.forEach((habit, index) => {
-        const item = document.createElement("label");
-        item.className = "habit-item";
-        item.innerHTML = `
-          <div class="habit-left">
-            <div class="habit-badge">${index + 1}</div>
-            <div class="habit-text">${habit}</div>
-          </div>
-          <input type="checkbox" id="habit_${index}" ${selected[index] ? "checked" : ""}>
-        `;
-        habitsBox.appendChild(item);
-      });
-    }
-
-    function getSelectedHabits() {
-      const habits = [];
-      for (let i = 0; i < habitList.length; i++) {
-        habits.push(document.getElementById(`habit_${i}`).checked);
-      }
-      return habits;
-    }
-
-    function setLoading(isLoading) {
-      loginBtn.disabled = isLoading;
-      registerBtn.disabled = isLoading;
-      checkinBtn.disabled = isLoading;
-      refreshBtn.disabled = isLoading;
-    }
-
-    function showMessage(el, text, isError = false) {
-      el.textContent = text;
-      el.style.color = isError ? "#ff9e9e" : "#ffd4ba";
-    }
-
-    function validateInput() {
-      const nickname = nicknameInput.value.trim();
-      const pin = pinInput.value.trim();
-
-      if (!nickname) {
-        showMessage(loginMsg, "請先輸入暱稱", true);
-        return null;
-      }
-
-      if (!/^\d{4}$/.test(pin)) {
-        showMessage(loginMsg, "PIN 必須是 4 位數字", true);
-        return null;
-      }
-
-      return { nickname, pin };
-    }
-
-    async function postData(data) {
-      const res = await fetch(API, {
-        method: "POST",
-        headers: {
-          "Content-Type": "text/plain;charset=utf-8"
-        },
-        body: JSON.stringify(data)
-      });
-
-      const text = await res.text();
-
-      try {
-        return JSON.parse(text);
-      } catch (err) {
-        throw new Error("API 回傳不是 JSON：" + text);
-      }
-    }
-
-    function normalizeHistoryRows(rows) {
-      return rows.map(row => ({
-        id: String(row[0] || "").trim(),
-        user_id: String(row[1] || "").trim(),
-        date: normalizeDateString(row[2]),
-        habits: [row[3], row[4], row[5], row[6], row[7], row[8], row[9]].map(v => {
-          return v === true || v === "TRUE" || v === "true";
-        }),
-        score: Number(row[10]) || 0,
-        review_good: String(row[11] || ""),
-        review_bad: String(row[12] || ""),
-        review_better: String(row[13] || ""),
-        created_at: row[14] || ""
-      }));
-    }
-
-    async function registerUser() {
-      const form = validateInput();
-      if (!form) return;
-
-      setLoading(true);
-      showMessage(loginMsg, "註冊中...");
-
-      try {
-        const data = await postData({
-          action: "register",
-          nickname: form.nickname,
-          pin: form.pin
-        });
-
-        if (data.status === "success") {
-          localStorage.setItem("user_id", data.user_id);
-          localStorage.setItem("nickname", form.nickname);
-          showMessage(loginMsg, "註冊成功");
-          await enterMainPage();
-        } else {
-          showMessage(loginMsg, data.message || "註冊失敗", true);
-        }
-      } catch (error) {
-        showMessage(loginMsg, "註冊失敗：" + error.message, true);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    async function loginUser() {
-      const form = validateInput();
-      if (!form) return;
-
-      setLoading(true);
-      showMessage(loginMsg, "登入中...");
-
-      try {
-        const data = await postData({
-          action: "login",
-          nickname: form.nickname,
-          pin: form.pin
-        });
-
-        if (data.status === "success") {
-          localStorage.setItem("user_id", data.user_id);
-          localStorage.setItem("nickname", form.nickname);
-          showMessage(loginMsg, "登入成功");
-          await enterMainPage();
-        } else {
-          showMessage(loginMsg, "登入失敗，請確認暱稱與 PIN", true);
-        }
-      } catch (error) {
-        showMessage(loginMsg, "登入失敗：" + error.message, true);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    async function fetchHistoryData() {
-      const userId = localStorage.getItem("user_id");
-      if (!userId) throw new Error("尚未登入");
-
-      const data = await postData({
-        action: "getData",
-        user_id: userId
-      });
-
-      if (data.status !== "success") {
-        throw new Error(data.message || "取得資料失敗");
-      }
-
-      return normalizeHistoryRows(data.data || []);
-    }
-
-    function fillFormWithRecord(record) {
-      renderHabits(record?.habits || []);
-      reviewGood.value = record?.review_good || "";
-      reviewBad.value = record?.review_bad || "";
-      reviewBetter.value = record?.review_better || "";
-    }
-
-    function clearTodayForm() {
-      renderHabits([]);
-      reviewGood.value = "";
-      reviewBad.value = "";
-      reviewBetter.value = "";
-    }
-
-    function updateTodayStatus() {
-      const nickname = localStorage.getItem("nickname") || "你";
-      helloText.textContent = `${nickname}，今天也一起慢慢變好 🌷`;
-
-      if (editingRecord) {
-        todayStatusHint.textContent = `目前正在編輯 ${editingRecord.date} 的紀錄，修改後按「完成今日打卡」即可儲存。`;
-        checkinBtn.disabled = false;
-        return;
-      }
-
-      if (todayExistingRecord) {
-        todayStatusHint.textContent = `今天已打卡，今日分數：${todayExistingRecord.score}/7。若要修改，請點月曆中的今天。`;
-        checkinBtn.disabled = true;
-      } else {
-        todayStatusHint.textContent = "今天還沒打卡，完成後就會記錄到月曆上。";
-        checkinBtn.disabled = false;
-      }
-    }
-
-    async function refreshAllViews() {
-      currentRows = await fetchHistoryData();
-      const today = getTodayStr();
-      todayExistingRecord = currentRows.find(r => String(r.date).trim() === today) || null;
-
-      if (!editingRecord) {
-        if (todayExistingRecord) {
-          fillFormWithRecord(todayExistingRecord);
-        } else {
-          clearTodayForm();
-        }
-      }
-
-      updateTodayStatus();
-      renderCalendar(currentRows);
-      renderStats(currentRows);
-    }
-
-    async function enterMainPage() {
-      loginPage.classList.add("hidden");
-      mainPage.classList.remove("hidden");
-      editingRecord = null;
-      await refreshAllViews();
-    }
-
-    async function createTodayCheckin() {
-      const userId = localStorage.getItem("user_id");
-      if (!userId) {
-        showMessage(checkinMsg, "請先登入", true);
-        return;
-      }
-
-      if (todayExistingRecord) {
-        showMessage(checkinMsg, "今天已經打卡過了，請到月曆點今天進行編輯。", true);
-        return;
-      }
-
-      const habits = getSelectedHabits();
-
-      setLoading(true);
-      showMessage(checkinMsg, "送出今日打卡中...");
-
-      try {
-        const data = await postData({
-          action: "checkin",
-          user_id: userId,
-          date: getTodayStr(),
-          habits: habits,
-          review_good: reviewGood.value.trim(),
-          review_bad: reviewBad.value.trim(),
-          review_better: reviewBetter.value.trim()
-        });
-
-        if (data.status === "success") {
-          showMessage(checkinMsg, `今日打卡成功，得分 ${data.score}/7 ✨`);
-          editingRecord = null;
-
-          currentRows = await fetchHistoryData();
-          const today = getTodayStr();
-          todayExistingRecord = currentRows.find(r => String(r.date).trim() === today) || null;
-
-          renderCalendar(currentRows);
-          renderStats(currentRows);
-          updateTodayStatus();
-
-          if (todayExistingRecord) {
-            fillFormWithRecord(todayExistingRecord);
-          }
-        } else {
-          showMessage(checkinMsg, data.message || "打卡失敗", true);
-        }
-      } catch (error) {
-        showMessage(checkinMsg, "打卡失敗：" + error.message, true);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    async function updateCheckin(recordId, dateStr) {
-      const userId = localStorage.getItem("user_id");
-      if (!userId) {
-        showMessage(checkinMsg, "請先登入", true);
-        return;
-      }
-
-      const habits = getSelectedHabits();
-
-      setLoading(true);
-      showMessage(checkinMsg, "更新紀錄中...");
-
-      try {
-        const data = await postData({
-          action: "updateCheckin",
-          record_id: recordId,
-          user_id: userId,
-          date: dateStr,
-          habits: habits,
-          review_good: reviewGood.value.trim(),
-          review_bad: reviewBad.value.trim(),
-          review_better: reviewBetter.value.trim()
-        });
-
-        if (data.status === "success") {
-          showMessage(checkinMsg, `已更新 ${dateStr} 的打卡紀錄，得分 ${data.score}/7`);
-          editingRecord = null;
-          detailModal.classList.add("hidden");
-          await refreshAllViews();
-        } else {
-          showMessage(checkinMsg, data.message || "更新失敗", true);
-        }
-      } catch (error) {
-        showMessage(checkinMsg, "更新失敗：" + error.message, true);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    async function handleCheckinSubmit() {
-      if (editingRecord) {
-        await updateCheckin(editingRecord.id, editingRecord.date);
-      } else {
-        await createTodayCheckin();
-      }
-    }
-
-    function getEmojiByScore(score) {
-      if (score >= 7) return "🥳";
-      if (score >= 5) return "😄";
-      if (score >= 3) return "🙂";
-      if (score >= 1) return "😌";
-      return "🌙";
-    }
-
-    function loadRecordToForm(row) {
-      editingRecord = row;
-      fillFormWithRecord(row);
-      checkinBtn.disabled = false;
-      todayStatusHint.textContent = `目前正在編輯 ${row.date} 的紀錄，修改後按「完成今日打卡」即可儲存。`;
-
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-      });
-
-      showMessage(checkinMsg, `已載入 ${row.date} 的舊紀錄，可以直接修改。`);
-    }
-
-    function renderCalendar(rows) {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = now.getMonth();
-      const firstDay = new Date(year, month, 1);
-      const lastDay = new Date(year, month + 1, 0);
-      const startWeekday = firstDay.getDay();
-      const totalDays = lastDay.getDate();
-      const today = getTodayStr();
-
-      const map = {};
-      rows.forEach(item => {
-        if (item.date) {
-          map[String(item.date).trim()] = item;
-        }
-      });
-
-      let html = `
-        <div class="calendar-box">
-          <div style="text-align:center;font-size:19px;margin-bottom:12px;color:#fff0db;">
-            ${year} 年 ${month + 1} 月
-          </div>
-          <div class="calendar-head">
-            <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
-          </div>
-          <div class="calendar-grid">
-      `;
-
-      for (let i = 0; i < startWeekday; i++) {
-        html += `<div class="day-cell empty"></div>`;
-      }
-
-      for (let day = 1; day <= totalDays; day++) {
-        const dateStr = formatDateToYMD(new Date(year, month, day));
-        const item = map[dateStr];
-        const hasRecord = !!item;
-        const score = hasRecord ? Number(item.score || 0) : 0;
-        const emoji = hasRecord ? getEmojiByScore(score) : "🫥";
-        const classes = ["day-cell"];
-
-        if (dateStr === today) classes.push("today-mark");
-        if (hasRecord) classes.push("has-record");
-        else classes.push("no-record");
-
-        html += `
-          <div class="${classes.join(" ")}" ${hasRecord ? `data-date="${dateStr}"` : ""}>
-            <div class="day-num">${day}</div>
-            <div class="day-emoji">${emoji}</div>
-            <div class="day-score">${hasRecord ? `已打卡 ${score}/7` : "未打卡"}</div>
-            ${hasRecord ? `<div class="record-dot"></div>` : `<div class="record-dot empty-dot"></div>`}
-          </div>
-        `;
-      }
-
-      html += `</div></div>`;
-      historyWrap.innerHTML = html;
-
-      historyWrap.querySelectorAll(".day-cell[data-date]").forEach(cell => {
-        cell.addEventListener("click", () => {
-          const date = cell.getAttribute("data-date");
-          const row = rows.find(r => String(r.date).trim() === date);
-          if (row) {
-            showDetail(row);
-          }
-        });
-      });
-    }
-
-    function showDetail(row) {
-      const habitHtml = row.habits.map((done, index) => `
-        <div class="review-box">${done ? "✅" : "⬜"} ${index + 1}. ${habitList[index]}</div>
-      `).join("");
-
-      detailContent.innerHTML = `
-        <div style="font-size:16px;">📅 日期：${row.date}</div>
-        <div class="score-pill">今日得分：${row.score} / 7</div>
-
-        <div style="margin-top:16px;font-size:16px;color:#fff0db;">今日習慣完成</div>
-        <div style="margin-top:8px;">${habitHtml}</div>
-
-        <div style="margin-top:16px;font-size:16px;color:#fff0db;">今日復盤</div>
-        <div class="review-box">✅ 今天做得好的一件事：${row.review_good || "未填寫"}</div>
-        <div class="review-box">❌ 今天可以更好的一件事：${row.review_bad || "未填寫"}</div>
-        <div class="review-box">💡 我可以怎麼想會更好：${row.review_better || "未填寫"}</div>
-
-        <div class="btns" style="margin-top:16px;">
-          <button id="editThisDayBtn" type="button">編輯這一天</button>
-        </div>
-      `;
-
-      detailModal.classList.remove("hidden");
-
-      document.getElementById("editThisDayBtn").addEventListener("click", () => {
-        loadRecordToForm(row);
-        detailModal.classList.add("hidden");
-      });
-    }
-
-    function renderStats(rows) {
-      if (!rows.length) {
-        statsWrap.innerHTML = `<div class="msg">還沒有統計資料喔</div>`;
-        if (scoreChart) {
-          scoreChart.destroy();
-          scoreChart = null;
-        }
-        if (habitChart) {
-          habitChart.destroy();
-          habitChart = null;
-        }
-        return;
-      }
-
-      const sorted = [...rows].sort((a, b) => a.date.localeCompare(b.date));
-      const recent7 = sorted.slice(-7);
-
-      const habitTotals = Array(7).fill(0);
-      sorted.forEach(item => {
-        item.habits.forEach((done, i) => {
-          if (done) habitTotals[i]++;
-        });
-      });
-
-      const totalPossible = sorted.length * 7;
-      const totalDone = sorted.reduce((sum, item) => sum + item.score, 0);
-      const rate = totalPossible ? Math.round((totalDone / totalPossible) * 100) : 0;
-
-      statsWrap.innerHTML = `
-        <div class="chart-card">
-          <div class="chart-title">累積達成率</div>
-          <div style="text-align:center;font-size:30px;color:#fff0db;">${rate}%</div>
-          <div class="hint">共完成 ${totalDone} / ${totalPossible} 次習慣</div>
-        </div>
-
-        <div class="chart-card">
-          <div class="chart-title">近 7 次打卡分數</div>
-          <canvas id="scoreChartCanvas"></canvas>
-        </div>
-
-        <div class="chart-card">
-          <div class="chart-title">7 個習慣累積完成次數</div>
-          <canvas id="habitChartCanvas"></canvas>
-        </div>
-      `;
-
-      const scoreCtx = document.getElementById("scoreChartCanvas");
-      const habitCtx = document.getElementById("habitChartCanvas");
-
-      if (scoreChart) scoreChart.destroy();
-      if (habitChart) habitChart.destroy();
-
-      scoreChart = new Chart(scoreCtx, {
-        type: "line",
-        data: {
-          labels: recent7.map(item => item.date.slice(5)),
-          datasets: [{
-            label: "每日分數",
-            data: recent7.map(item => item.score),
-            tension: 0.35,
-            fill: false,
-            borderColor: "#ffb07b",
-            backgroundColor: "#ffb07b"
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              labels: { color: "#fff0db" }
-            }
-          },
-          scales: {
-            x: {
-              ticks: { color: "#ffe3cf" },
-              grid: { color: "rgba(255,255,255,0.08)" }
-            },
-            y: {
-              beginAtZero: true,
-              max: 7,
-              ticks: { stepSize: 1, color: "#ffe3cf" },
-              grid: { color: "rgba(255,255,255,0.08)" }
-            }
-          }
-        }
-      });
-
-      habitChart = new Chart(habitCtx, {
-        type: "bar",
-        data: {
-          labels: habitList.map((item, i) => `${i + 1}`),
-          datasets: [{
-            label: "完成次數",
-            data: habitTotals,
-            backgroundColor: "rgba(255, 176, 123, 0.7)",
-            borderColor: "#ffb07b",
-            borderWidth: 1
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              labels: { color: "#fff0db" }
-            },
-            tooltip: {
-              callbacks: {
-                title: function(context) {
-                  const idx = context[0].dataIndex;
-                  return `${idx + 1}. ${habitList[idx]}`;
-                }
-              }
-            }
-          },
-          scales: {
-            x: {
-              ticks: { color: "#ffe3cf" },
-              grid: { color: "rgba(255,255,255,0.05)" }
-            },
-            y: {
-              beginAtZero: true,
-              ticks: { color: "#ffe3cf" },
-              grid: { color: "rgba(255,255,255,0.08)" }
-            }
-          }
-        }
-      });
-    }
-
-    function logout() {
-      localStorage.removeItem("user_id");
-      localStorage.removeItem("nickname");
-      currentRows = [];
-      todayExistingRecord = null;
-      editingRecord = null;
-      clearTodayForm();
-      historyWrap.innerHTML = "";
-      statsWrap.innerHTML = "";
-      mainPage.classList.add("hidden");
-      loginPage.classList.remove("hidden");
-      nicknameInput.value = "";
-      pinInput.value = "";
-      showMessage(loginMsg, "已登出");
-      showMessage(checkinMsg, "");
-    }
-
-    loginBtn.addEventListener("click", loginUser);
-    registerBtn.addEventListener("click", registerUser);
-    checkinBtn.addEventListener("click", handleCheckinSubmit);
-    logoutBtn.addEventListener("click", logout);
-    refreshBtn.addEventListener("click", async () => {
-      editingRecord = null;
-      showMessage(checkinMsg, "資料重新整理中...");
-      await refreshAllViews();
-      showMessage(checkinMsg, "資料已更新");
+  <div class="total-banner">
+    <div class="total-big" id="final-score">68</div>
+    <div class="total-lbl">✦ 總得分 / 70 分 ✦</div>
+    <div class="total-rank">超越了 <strong>87%</strong> 的參賽者！</div>
+  </div>
+
+  <div class="section-title">💡 成功思維分析</div>
+  <div class="analysis-grid" id="analysis-grid"></div>
+
+  <div class="section-title">🏅 獲得徽章</div>
+  <div class="card" style="margin-bottom:16px"><div class="badges" id="badges-wrap"></div></div>
+
+  <div class="section-title">📊 全體排名</div>
+  <div class="card" id="final-lb-wrap" style="margin-bottom:16px"></div>
+</div>
+
+</div><!-- end .app -->
+
+<script>
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ⚙️  設定區 — 替換成你的 Google Apps Script URL
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwnh3kmVHMVqj9eXaRzn5theSheIqthjKVfywi2tfWo0-aT1_iUIqXzwlzugRumyppw/exec';
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 靜態資料
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const HABITS = [
+  { id:1, name:'積極主動', desc:'今天做了一件主動出擊的事', cls:'tag-1', icon:'🚀' },
+  { id:2, name:'以終為始', desc:'清楚知道今日目標並朝向它行動', cls:'tag-2', icon:'🎯' },
+  { id:3, name:'要事第一', desc:'完成了今日最重要的一件事', cls:'tag-3', icon:'⭐' },
+  { id:4, name:'雙贏思維', desc:'與人互動時考慮雙方利益', cls:'tag-4', icon:'🤝' },
+  { id:5, name:'先理解後被理解', desc:'今天認真傾聽了某人的想法', cls:'tag-5', icon:'👂' },
+  { id:6, name:'統合綜效', desc:'與他人合作創造1+1>2的效果', cls:'tag-6', icon:'✨' },
+  { id:7, name:'不斷更新', desc:'花時間在身心靈的自我提升', cls:'tag-7', icon:'🌱' },
+];
+
+const QUOTES = [
+  '「你每天的努力，都是在為未來的自己種下美麗的種子。🌱」',
+  '「改變從此刻開始，每一步都算數。✨」',
+  '「你是自己最好的投資，持續成長是最美的事。💪」',
+  '「困難是成長的養分，每一關都讓你更強大。🌟」',
+  '「今天的堅持，是明天的底氣。加油！🔥」',
+  '「相信過程，你已比昨天的自己更好了。🌸」',
+  '「好習慣的積累，正在悄悄改變你的人生。⭐」',
+  '「每一個清晨都是新的開始，把握今天！☀️」',
+  '「你的努力，終將成就不凡的你。🏆」',
+  '「成功不是偶然，是每天選擇成長的結果。💫」',
+];
+
+const ENCOURAGE = [
+  '✨ 萬事起頭難，勇敢開始就是成功！✨',
+  '🌱 第二天！播下種子的日子！',
+  '⭐ 第三天！保持節奏，你很棒！',
+  '💪 四天了！超過三分之一！',
+  '🌟 半程到了！你正在改變！',
+  '🔥 六天！過半了！保持熱情！',
+  '✨ 只剩三天！終點就在眼前！',
+  '🌸 快到了！再一把勁兒！',
+  '🏆 最後兩天！你是最棒的！',
+  '🎉 最後一天！寫下輝煌的結局！',
+];
+
+const DAY_CN = ['一','二','三','四','五','六','七','八','九','十'];
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 狀態
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+let state = {
+  userId: null,
+  userName: '小花',
+  currentDay: 3,
+  streak: 3,
+  totalScore: 41,
+  todayScore: 0,
+  checkedHabits: new Set(),
+  submitted: false,
+  leaderboard: [
+    {name:'星星小姐',score:65,you:false},
+    {name:'勇氣達達',score:62,you:false},
+    {name:'小花',score:41,you:true},
+    {name:'陽光米米',score:38,you:false},
+    {name:'奔跑的心',score:35,you:false},
+    {name:'療癒小貓',score:30,you:false},
+  ],
+};
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 導覽
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function showPage(p) {
+  document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('page-' + p).classList.add('active');
+  document.getElementById('nav-' + p).classList.add('active');
+  if (p === 'progress') renderProgress();
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Toast
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function toast(msg, isError) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.background = isError
+    ? 'linear-gradient(135deg,#FF8FAB,#C48BD6)'
+    : 'linear-gradient(135deg,#7ECDA8,#5ECDA8)';
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// API 呼叫
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+async function apiPost(body) {
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST', mode: 'cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
     });
-    closeDetailBtn.addEventListener("click", () => detailModal.classList.add("hidden"));
-    detailModal.addEventListener("click", (e) => {
-      if (e.target === detailModal) detailModal.classList.add("hidden");
-    });
+    return await res.json();
+  } catch (e) {
+    console.warn('API error (使用本地模式):', e);
+    return { success: false, message: '網路錯誤，使用本地模式' };
+  }
+}
 
-    if (localStorage.getItem("user_id")) {
-      enterMainPage();
+async function apiGet(params) {
+  try {
+    const qs = new URLSearchParams(params).toString();
+    const res = await fetch(APPS_SCRIPT_URL + '?' + qs);
+    return await res.json();
+  } catch (e) {
+    return { success: false };
+  }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 報名 / 登入
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function toggleLoginReg() {
+  const rf = document.getElementById('register-form');
+  const lf = document.getElementById('login-form');
+  const show = rf.style.display === 'none';
+  rf.style.display = show ? 'block' : 'none';
+  lf.style.display = show ? 'none' : 'block';
+}
+
+async function doRegister() {
+  const name  = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const goal  = document.getElementById('reg-goal').value;
+  if (!name || !email) { toast('請填寫姓名與信箱 🌸', true); return; }
+
+  const result = await apiPost({ action: 'register', name, email, goal });
+  if (result.success || result.userId) {
+    state.userId   = result.userId || 'local_' + Date.now();
+    state.userName = name;
+    updateUserUI();
+    toast('🌱 報名成功！開始你的旅程！');
+    showPage('checkin');
+  } else {
+    toast(result.message || '報名時發生錯誤', true);
+  }
+}
+
+async function doLogin() {
+  const name = document.getElementById('login-name').value.trim();
+  if (!name) { toast('請輸入暱稱 🌸', true); return; }
+
+  const result = await apiPost({ action: 'login', name });
+  if (result.success) {
+    state.userId     = result.userId;
+    state.userName   = result.userName;
+    state.totalScore = result.totalScore || 0;
+    state.streak     = result.streak || 0;
+    state.currentDay = result.currentDay || 1;
+  } else {
+    // 本地模式
+    state.userName = name;
+  }
+  updateUserUI();
+  renderCheckin();
+  toast('🌟 歡迎回來，' + (state.userName) + '！');
+  showPage('checkin');
+}
+
+function updateUserUI() {
+  const name = state.userName;
+  document.getElementById('user-display').textContent = name;
+  document.getElementById('result-name').textContent  = name + '的成果';
+  const av = document.getElementById('user-avatar');
+  av.textContent = name.substring(0, 2);
+  document.getElementById('streak-badge').textContent = '🔥 ' + state.streak + '天連續';
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 打卡頁渲染
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function renderCheckin() {
+  // 金句
+  document.getElementById('daily-quote').textContent =
+    QUOTES[Math.floor(Math.random() * QUOTES.length)];
+
+  // Day header
+  const d = state.currentDay;
+  document.getElementById('day-num').textContent      = 'Day ' + d;
+  document.getElementById('day-label-cn').textContent = '第' + (DAY_CN[d-1]||d) + '天';
+  document.getElementById('encourage-text').textContent = ENCOURAGE[d-1] || ENCOURAGE[0];
+
+  // 日期
+  const now = new Date();
+  document.getElementById('today-date').textContent =
+    now.toLocaleDateString('zh-TW', { year:'numeric', month:'long', day:'numeric', weekday:'long' });
+
+  buildCalendar();
+  buildHabits();
+}
+
+function buildCalendar() {
+  const grid = document.getElementById('cal-grid');
+  grid.innerHTML = '';
+  const d = state.currentDay;
+  for (let i = 1; i <= 10; i++) {
+    const el = document.createElement('div');
+    el.className = 'cal-day';
+    let icon = '', star = '';
+    if (i < d) {
+      el.classList.add('completed'); icon = '✅'; star = '<span class="cal-star">⭐</span>';
+    } else if (i === d) {
+      el.classList.add('today'); icon = '📍';
     } else {
-      renderHabits([]);
+      el.classList.add('future'); icon = '🔒';
     }
-  </script>
+    el.innerHTML = `${star}<span class="cal-day-icon">${icon}</span><span>Day${i}</span>`;
+    grid.appendChild(el);
+  }
+}
+
+function buildHabits() {
+  const c = document.getElementById('habits-container');
+  c.innerHTML = '';
+  HABITS.forEach(h => {
+    const item = document.createElement('div');
+    item.className = 'habit-item';
+    item.id = 'habit-' + h.id;
+    item.onclick = () => toggleHabit(h.id);
+    item.innerHTML = `
+      <div class="habit-tag ${h.cls}">${h.id}</div>
+      <div class="habit-content">
+        <div class="habit-name">${h.icon} ${h.name}</div>
+        <div class="habit-desc">${h.desc}</div>
+      </div>
+      <div class="habit-check" id="check-${h.id}"></div>
+    `;
+    c.appendChild(item);
+  });
+}
+
+function toggleHabit(id) {
+  if (state.submitted) return;
+  const ch = document.getElementById('check-' + id);
+  if (state.checkedHabits.has(id)) {
+    state.checkedHabits.delete(id); ch.classList.remove('checked'); ch.textContent = '';
+  } else {
+    state.checkedHabits.add(id); ch.classList.add('checked'); ch.textContent = '✓';
+  }
+  state.todayScore = state.checkedHabits.size;
+}
+
+async function submitCheckin() {
+  if (state.submitted) return;
+  state.submitted = true;
+  state.todayScore = state.checkedHabits.size;
+
+  // 送出到後端
+  const habits = {};
+  for (let i = 1; i <= 7; i++) { habits['h'+i] = state.checkedHabits.has(i); }
+  const result = await apiPost({
+    action: 'checkin',
+    userId:   state.userId || 'local',
+    userName: state.userName,
+    habits,
+    day: state.currentDay
+  });
+
+  state.totalScore += state.todayScore;
+
+  const btn = document.getElementById('submit-btn');
+  btn.textContent = '🌟 已打卡完成！';
+  btn.classList.add('submitted');
+  document.getElementById('submitted-msg').style.display = 'block';
+  toast('🎉 打卡成功！今日得分 ' + state.todayScore + '/7');
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 進度頁
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+async function renderProgress() {
+  document.getElementById('today-score-disp').textContent = state.todayScore;
+  document.getElementById('total-score-disp').textContent = state.totalScore;
+
+  // 嘗試取得排行榜
+  const lbResult = await apiGet({ action: 'leaderboard' });
+  const lb = (lbResult.success && lbResult.leaderboard) ? lbResult.leaderboard : state.leaderboard;
+  renderLeaderboard('leaderboard-wrap', lb);
+  renderReview('review-wrap');
+}
+
+function renderLeaderboard(containerId, lb) {
+  const c = document.getElementById(containerId);
+  c.innerHTML = '';
+  const maxScore = lb[0]?.score || 70;
+  lb.forEach((p, i) => {
+    const item = document.createElement('div');
+    item.className = 'lb-item';
+    const rankCls   = i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-other';
+    const rankLabel = i===0?'👑':i===1?'🥈':i===2?'🥉':(i+1);
+    const youTag    = p.you ? '<span class="lb-you">你</span>' : '';
+    const barW      = Math.round(p.score / maxScore * 100);
+    item.innerHTML = `
+      <div class="lb-rank ${rankCls}">${rankLabel}</div>
+      <div class="lb-name-wrap">
+        <div><span class="lb-name">${p.name}</span>${youTag}</div>
+        <div class="lb-bar-wrap"><div class="lb-bar" style="width:${barW}%"></div></div>
+      </div>
+      <div class="lb-score-val">${p.score}分</div>
+    `;
+    c.appendChild(item);
+  });
+}
+
+function renderReview(containerId) {
+  const c = document.getElementById(containerId);
+  c.innerHTML = '';
+  const total = state.currentDay - 1 || 1;
+  HABITS.forEach((h, i) => {
+    const pct = Math.round(Math.random() * 60 + 40); // 示範數據，實際從後端取得
+    const item = document.createElement('div');
+    item.className = 'review-item';
+    item.innerHTML = `
+      <div class="review-lbl">
+        <span>${h.icon} ${h.name}</span>
+        <span>${pct}%</span>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar pb-${i+1}" style="width:${pct}%"></div>
+      </div>
+    `;
+    c.appendChild(item);
+  });
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 成果頁
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function renderResults() {
+  document.getElementById('final-score').textContent = state.totalScore;
+  // 分析卡
+  const grid = document.getElementById('analysis-grid');
+  grid.innerHTML = '';
+  HABITS.forEach(h => {
+    const score = Math.floor(Math.random() * 5 + 5);
+    const card = document.createElement('div');
+    card.className = 'analysis-card';
+    card.innerHTML = `
+      <span class="analysis-icon">${h.icon}</span>
+      <div class="analysis-score">${score}/10</div>
+      <div class="analysis-name">${h.name}</div>
+    `;
+    grid.appendChild(card);
+  });
+
+  // 徽章
+  const bw = document.getElementById('badges-wrap');
+  const badges = [
+    {icon:'🔥',label:'連續打卡達人'},
+    {icon:'⭐',label:'七習慣全勤'},
+    {icon:'🌱',label:'不斷更新滿分'},
+    {icon:'🏆',label:'前三名完賽'},
+    {icon:'💫',label:'積極主動之星'},
+  ];
+  bw.innerHTML = '';
+  badges.forEach(b => {
+    const el = document.createElement('div');
+    el.className = 'badge';
+    el.innerHTML = `<span style="font-size:16px">${b.icon}</span>${b.label}`;
+    bw.appendChild(el);
+  });
+
+  renderLeaderboard('final-lb-wrap', state.leaderboard);
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 初始化
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+renderCheckin();
+renderResults();
+</script>
 </body>
 </html>
