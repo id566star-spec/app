@@ -169,12 +169,41 @@
       margin-bottom: 10px;
       font-size: 15px;
       color: #fff0e3;
+      gap: 12px;
+    }
+
+    .habit-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .habit-badge {
+      width: 28px;
+      height: 28px;
+      flex: 0 0 28px;
+      border-radius: 999px;
+      background: rgba(255, 176, 123, 0.22);
+      border: 1px solid rgba(255, 176, 123, 0.5);
+      color: #fff3e8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+    }
+
+    .habit-text {
+      flex: 1;
+      line-height: 1.4;
     }
 
     .habit-item input[type="checkbox"] {
       width: 24px;
       height: 24px;
       accent-color: #ff9f66;
+      flex: 0 0 24px;
     }
 
     .sub-card {
@@ -217,7 +246,7 @@
     }
 
     .day-cell {
-      min-height: 74px;
+      min-height: 76px;
       border-radius: 14px;
       background: rgba(255,255,255,0.08);
       padding: 6px 3px;
@@ -547,7 +576,10 @@
         const item = document.createElement("label");
         item.className = "habit-item";
         item.innerHTML = `
-          <span>${habit}</span>
+          <div class="habit-left">
+            <div class="habit-badge">${index + 1}</div>
+            <div class="habit-text">${habit}</div>
+          </div>
           <input type="checkbox" id="habit_${index}" ${selected[index] ? "checked" : ""}>
         `;
         habitsBox.appendChild(item);
@@ -881,7 +913,7 @@
       const map = {};
       rows.forEach(item => {
         if (item.date) {
-          map[item.date.trim()] = item;
+          map[item.date] = item;
         }
       });
 
@@ -938,7 +970,7 @@
 
     function showDetail(row) {
       const habitHtml = row.habits.map((done, index) => `
-        <div class="review-box">${done ? "✅" : "⬜"} ${habitList[index]}</div>
+        <div class="review-box">${done ? "✅" : "⬜"} ${index + 1}. ${habitList[index]}</div>
       `).join("");
 
       detailContent.innerHTML = `
@@ -1056,7 +1088,7 @@
       habitChart = new Chart(habitCtx, {
         type: "bar",
         data: {
-          labels: habitList,
+          labels: habitList.map((item, i) => `${i + 1}`),
           datasets: [{
             label: "完成次數",
             data: habitTotals,
@@ -1070,6 +1102,14 @@
           plugins: {
             legend: {
               labels: { color: "#fff0db" }
+            },
+            tooltip: {
+              callbacks: {
+                title: function(context) {
+                  const idx = context[0].dataIndex;
+                  return `${idx + 1}. ${habitList[idx]}`;
+                }
+              }
             }
           },
           scales: {
