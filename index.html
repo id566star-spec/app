@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>30天身心靈挑戰</title>
+
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+
+<style>
+body {
+  margin: 0;
+  font-family: 'ZCOOL KuaiLe', cursive;
+  background: #f7f3ef;
+  text-align: center;
+}
+
+.card {
+  background: white;
+  margin: 20px;
+  padding: 20px;
+  border-radius: 20px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+input {
+  width: 90%;
+  padding: 12px;
+  margin: 10px;
+  border-radius: 12px;
+  border: none;
+  background: #eee;
+}
+
+button {
+  background: #d98c6f;
+  color: white;
+  padding: 12px 30px;
+  border: none;
+  border-radius: 15px;
+  font-size: 16px;
+}
+
+.habit {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+}
+
+</style>
+</head>
+
+<body>
+
+<h2>🌱 30天身心靈挑戰</h2>
+<p id="quote">今天也值得變得更好 💛</p>
+
+<div class="card" id="loginPage">
+  <input id="nickname" placeholder="暱稱">
+  <input id="pin" type="password" placeholder="PIN">
+  <br>
+  <button onclick="login()">登入</button>
+  <button onclick="register()">註冊</button>
+</div>
+
+<div class="card" id="checkinPage" style="display:none;">
+  <h3>今日打卡</h3>
+
+  <div id="habits"></div>
+
+  <button onclick="submitCheckin()">完成打卡</button>
+</div>
+
+<script>
+
+const API = "你的AppsScript網址";
+
+let user_id = localStorage.getItem("user_id");
+
+const habitList = [
+  "早起",
+  "運動",
+  "閱讀",
+  "感恩",
+  "正念冥想",
+  "自我肯定",
+  "幫助他人"
+];
+
+function renderHabits() {
+  const container = document.getElementById("habits");
+  container.innerHTML = "";
+
+  habitList.forEach((h, i) => {
+    container.innerHTML += `
+      <div class="habit">
+        ${h}
+        <input type="checkbox" id="h${i}">
+      </div>
+    `;
+  });
+}
+
+renderHabits();
+
+function register() {
+  fetch(API, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "register",
+      nickname: nickname.value,
+      pin: pin.value
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    alert("註冊成功");
+  });
+}
+
+function login() {
+  fetch(API, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "login",
+      nickname: nickname.value,
+      pin: pin.value
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === "success") {
+      localStorage.setItem("user_id", data.user_id);
+      showCheckin();
+    } else {
+      alert("登入失敗");
+    }
+  });
+}
+
+function showCheckin() {
+  document.getElementById("loginPage").style.display = "none";
+  document.getElementById("checkinPage").style.display = "block";
+}
+
+function submitCheckin() {
+  let habits = [];
+
+  for (let i = 0; i < 7; i++) {
+    habits.push(document.getElementById("h"+i).checked);
+  }
+
+  fetch(API, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "checkin",
+      user_id: localStorage.getItem("user_id"),
+      date: new Date().toISOString().slice(0,10),
+      habits: habits
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    alert("今日得分：" + data.score);
+  });
+}
+
+if(user_id){
+  showCheckin();
+}
+
+</script>
+</body>
+</html>
