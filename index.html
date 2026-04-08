@@ -1,177 +1,1597 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>30天打卡</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>30天打卡身心靈成長競賽</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * { box-sizing: border-box; }
 
-<style>
-body{
-  margin:0;
-  font-family:"Noto Serif TC",serif;
-  background:#2a001d;
-  color:white;
-}
-.wrap{max-width:420px;margin:auto;padding:20px;}
-.card{background:#3a0030;border-radius:16px;padding:16px;margin-bottom:16px;}
-button{padding:12px;border:none;border-radius:10px;background:#ff6aa2;color:white;width:100%;}
-input{width:100%;padding:10px;border-radius:10px;border:none;margin-bottom:10px;}
-.day{display:inline-block;width:18%;margin:1%;padding:10px;border-radius:10px;text-align:center;}
-.done{background:#ff6aa2;}
-.today{border:2px solid yellow;}
-</style>
+    :root{
+      --bg1:#52002a;
+      --bg2:#2a001d;
+      --text:#fff4f7;
+      --shadow:0 16px 40px rgba(0,0,0,.25);
+    }
+
+    body{
+      margin:0;
+      font-family:"Noto Serif TC","PMingLiU","MingLiU","Songti TC",serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top right, #8d155d 0%, transparent 25%),
+        linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 100%);
+      min-height:100vh;
+    }
+
+    .wrap{
+      max-width:430px;
+      margin:0 auto;
+      padding:18px 16px 32px;
+    }
+
+    .hidden{ display:none !important; }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:16px;
+    }
+
+    .userbox{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+
+    .avatar{
+      width:46px;
+      height:46px;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:linear-gradient(135deg,#8b2cff,#ff5aa5);
+      font-size:18px;
+      box-shadow:0 8px 20px rgba(0,0,0,.18);
+      flex:0 0 46px;
+    }
+
+    .user-meta{
+      min-width:0;
+    }
+
+    .user-meta .tiny{
+      font-size:12px;
+      color:#ffd4e8;
+      opacity:.85;
+    }
+
+    .user-meta .name{
+      font-size:24px;
+      line-height:1.1;
+      color:#fff4f7;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .streak{
+      flex:0 0 auto;
+      background:rgba(255,166,0,.18);
+      color:#ffe7aa;
+      border:1px solid rgba(255,210,120,.22);
+      border-radius:16px;
+      padding:10px 12px;
+      font-size:14px;
+      box-shadow:0 6px 16px rgba(0,0,0,.16);
+    }
+
+    .quote-card{
+      background:linear-gradient(90deg, rgba(143,0,72,.88), rgba(45,130,147,.78));
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:20px;
+      padding:16px 18px;
+      margin-bottom:18px;
+      box-shadow:var(--shadow);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .quote-card:before,
+    .quote-card:after{
+      content:"✦";
+      position:absolute;
+      color:rgba(255,255,255,.4);
+      font-size:14px;
+    }
+
+    .quote-card:before{ left:14px; top:10px; }
+    .quote-card:after{ right:16px; bottom:10px; }
+
+    .quote-card .quote-text{
+      text-align:center;
+      font-size:16px;
+      line-height:1.7;
+      padding:0 18px;
+    }
+
+    .hero{
+      background:linear-gradient(135deg, #9f003f 0%, #7a1a76 100%);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:28px;
+      padding:22px 18px 18px;
+      box-shadow:var(--shadow);
+      position:relative;
+      overflow:hidden;
+      margin-bottom:18px;
+    }
+
+    .hero .cloud{
+      position:absolute;
+      opacity:.22;
+      font-size:18px;
+    }
+
+    .hero .cloud.c1{ left:18px; top:16px; }
+    .hero .cloud.c2{ right:18px; bottom:16px; }
+
+    .hero .day-big{
+      text-align:center;
+      font-size:52px;
+      line-height:1;
+      margin-top:4px;
+      margin-bottom:8px;
+      font-weight:700;
+    }
+
+    .hero .day-sub{
+      text-align:center;
+      font-size:18px;
+      color:#ffe4f0;
+      margin-bottom:6px;
+    }
+
+    .hero .date-sub{
+      text-align:center;
+      font-size:14px;
+      color:#ffd7eb;
+      opacity:.9;
+      margin-bottom:14px;
+    }
+
+    .hero-tip{
+      background:rgba(54,16,56,.35);
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:16px;
+      padding:14px 12px;
+      text-align:center;
+      font-size:15px;
+      line-height:1.6;
+      color:#ffe9f2;
+    }
+
+    .section-title{
+      font-size:20px;
+      color:#ffe6f1;
+      margin:18px 0 10px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .challenge-card,
+    .form-card,
+    .stats-card,
+    .login-card{
+      background:rgba(40,18,0,.42);
+      border-radius:22px;
+      padding:18px 14px 20px;
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:var(--shadow);
+      margin-bottom:18px;
+    }
+
+    .challenge-card{
+      background:linear-gradient(180deg, rgba(18,25,33,.88), rgba(22,28,36,.96));
+      padding:18px 14px;
+    }
+
+    .challenge-grid{
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:12px;
+    }
+
+    .day-tile{
+      background:linear-gradient(180deg, #242b34, #1d222b);
+      border:1px solid rgba(255,255,255,.05);
+      border-radius:16px;
+      min-height:94px;
+      padding:10px 8px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      text-align:center;
+      color:#dfe6ee;
+      position:relative;
+      transition:.2s ease;
+    }
+
+    .day-tile.clickable{
+      cursor:pointer;
+      pointer-events:auto;
+    }
+
+    .day-tile.clickable:hover{
+      transform:translateY(-2px) scale(1.01);
+      border-color:rgba(255,255,255,.18);
+    }
+
+    .day-tile .tile-icon{
+      font-size:22px;
+      line-height:1;
+    }
+
+    .day-tile .tile-title{
+      font-size:14px;
+      line-height:1.2;
+    }
+
+    .day-tile .tile-sub{
+      font-size:11px;
+      opacity:.9;
+      line-height:1.25;
+    }
+
+    .day-tile.done{
+      background:linear-gradient(180deg, rgba(164,0,64,.9), rgba(99,14,46,.92));
+      border-color:rgba(255,80,150,.55);
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.05), 0 0 20px rgba(255,52,124,.15);
+      color:#fff6fb;
+    }
+
+    .day-tile.done .tile-sub{
+      color:#ffd8ea;
+    }
+
+    .day-tile.pending .tile-sub{
+      color:#d7dee8;
+    }
+
+    .day-tile.future .tile-sub{
+      color:#9ea8b5;
+    }
+
+    .day-tile.today{
+      outline:2px solid rgba(255,173,112,.75);
+      outline-offset:0;
+    }
+
+    .day-tile.future{
+      color:#b4bcc6;
+    }
+
+    .day-tile.future .tile-icon{
+      opacity:.9;
+    }
+
+    .day-tile.pending{
+      background:linear-gradient(180deg, rgba(41,48,58,.96), rgba(28,34,42,.98));
+      color:#d2dae3;
+    }
+
+    .tile-dot{
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background:rgba(255,255,255,.22);
+      margin-top:2px;
+    }
+
+    .day-tile.done .tile-dot{
+      background:#ffd0e7;
+    }
+
+    .day-tile.unlock-animate {
+      animation: popUnlock 0.5s ease;
+    }
+
+    @keyframes popUnlock {
+      0% { transform: scale(0.92); box-shadow: 0 0 0 rgba(255,90,160,0); }
+      50% { transform: scale(1.06); box-shadow: 0 0 24px rgba(255,90,160,0.35); }
+      100% { transform: scale(1); box-shadow: 0 0 0 rgba(255,90,160,0); }
+    }
+
+    .field{ margin-bottom:14px; }
+
+    .label{
+      font-size:15px;
+      margin-bottom:8px;
+      color:#ffd8bb;
+      display:block;
+    }
+
+    input, textarea{
+      width:100%;
+      border:none;
+      outline:none;
+      padding:14px;
+      border-radius:14px;
+      font-size:16px;
+      background:rgba(255,255,255,.12);
+      color:#fff4ea;
+      font-family:inherit;
+    }
+
+    textarea{
+      min-height:92px;
+      resize:vertical;
+    }
+
+    input::placeholder,
+    textarea::placeholder{
+      color:rgba(255,234,220,.68);
+    }
+
+    .habit-item{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      background:rgba(255,255,255,.08);
+      padding:13px 14px;
+      border-radius:14px;
+      margin-bottom:10px;
+      font-size:15px;
+      color:#fff0e3;
+      gap:12px;
+    }
+
+    .habit-left{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex:1;
+      min-width:0;
+    }
+
+    .habit-badge{
+      width:28px;
+      height:28px;
+      flex:0 0 28px;
+      border-radius:999px;
+      background:rgba(255,176,123,.22);
+      border:1px solid rgba(255,176,123,.5);
+      color:#fff3e8;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:13px;
+    }
+
+    .habit-text{
+      flex:1;
+      line-height:1.4;
+    }
+
+    .habit-item input[type="checkbox"]{
+      width:24px;
+      height:24px;
+      accent-color:#ff9f66;
+      flex:0 0 24px;
+    }
+
+    .sub-card{
+      background:rgba(255,255,255,.06);
+      border-radius:18px;
+      padding:14px;
+      margin-top:14px;
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .sub-title{
+      font-size:18px;
+      margin-bottom:12px;
+      color:#fff0db;
+      text-align:center;
+    }
+
+    .btns{
+      display:flex;
+      gap:10px;
+      justify-content:center;
+      flex-wrap:wrap;
+      margin-top:12px;
+    }
+
+    button{
+      border:none;
+      outline:none;
+      cursor:pointer;
+      background:#b96539;
+      color:#fff;
+      border-radius:16px;
+      padding:13px 22px;
+      font-size:18px;
+      font-family:inherit;
+      box-shadow:0 6px 14px rgba(0,0,0,.16);
+    }
+
+    button:disabled{
+      opacity:.6;
+      cursor:not-allowed;
+    }
+
+    .small-btn{
+      background:#92634d;
+      font-size:15px;
+      padding:11px 18px;
+      box-shadow:none;
+    }
+
+    .outline-btn{
+      background:transparent;
+      color:#ffd7bd;
+      border:1px solid rgba(255,255,255,.18);
+      box-shadow:none;
+    }
+
+    .msg{
+      margin-top:12px;
+      text-align:center;
+      font-size:14px;
+      min-height:22px;
+      color:#ffd4ba;
+      line-height:1.6;
+      white-space:pre-wrap;
+    }
+
+    .chart-card{
+      background:rgba(32,14,0,.34);
+      border-radius:18px;
+      padding:14px;
+      margin-top:14px;
+      border:1px solid rgba(255,255,255,.10);
+    }
+
+    .chart-title{
+      font-size:17px;
+      margin-bottom:12px;
+      text-align:center;
+      color:#fff0db;
+    }
+
+    .hint{
+      text-align:center;
+      color:#ffd6bb;
+      font-size:13px;
+      margin-top:8px;
+      line-height:1.6;
+    }
+
+    .review-box{
+      background:rgba(255,255,255,.08);
+      border-radius:14px;
+      padding:10px 12px;
+      margin-top:8px;
+      line-height:1.7;
+      color:#fff0e2;
+      font-size:14px;
+      word-break:break-word;
+    }
+
+    .badge-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .badge-card {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 14px 8px;
+      text-align: center;
+      min-height: 110px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .badge-card.unlocked {
+      background: linear-gradient(180deg, rgba(255,183,77,0.20), rgba(255,111,145,0.16));
+      border-color: rgba(255,195,120,0.45);
+      box-shadow: 0 0 20px rgba(255,183,77,0.12);
+    }
+
+    .badge-icon {
+      font-size: 28px;
+    }
+
+    .badge-title {
+      font-size: 14px;
+      color: #fff4ea;
+    }
+
+    .badge-desc {
+      font-size: 11px;
+      color: #ffd8c4;
+      line-height: 1.4;
+    }
+
+    .rank-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .rank-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255,255,255,0.07);
+      border-radius: 14px;
+      padding: 12px 14px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .rank-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .rank-no {
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.10);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+    }
+
+    .rank-name {
+      font-size: 15px;
+      color: #fff2e8;
+    }
+
+    .rank-score {
+      font-size: 14px;
+      color: #ffd6bb;
+    }
+
+    @media (max-width:380px){
+      .challenge-grid{
+        gap:10px;
+      }
+      .day-tile{
+        min-height:88px;
+      }
+      .hero .day-big{
+        font-size:44px;
+      }
+    }
+  </style>
 </head>
-
 <body>
-<div class="wrap">
+  <div class="wrap">
+    <div id="loginPage" class="login-card">
+      <div class="section-title">登入 / 註冊</div>
 
-<div id="login">
-  <div class="card">
-    <h3>登入</h3>
-    <input id="name" placeholder="暱稱">
-    <input id="pin" placeholder="PIN">
-    <button onclick="login()">進入</button>
+      <div class="field">
+        <label class="label" for="nickname">暱稱</label>
+        <input id="nickname" type="text" placeholder="請輸入你的暱稱">
+      </div>
+
+      <div class="field">
+        <label class="label" for="pin">PIN（4位數）</label>
+        <input id="pin" type="password" maxlength="4" inputmode="numeric" placeholder="請輸入 4 位數 PIN">
+      </div>
+
+      <div class="btns">
+        <button id="loginBtn" type="button">登入</button>
+        <button id="registerBtn" type="button">註冊</button>
+      </div>
+
+      <div class="msg" id="loginMsg"></div>
+    </div>
+
+    <div id="mainPage" class="hidden">
+      <div class="topbar">
+        <div class="userbox">
+          <div class="avatar" id="avatarText">白</div>
+          <div class="user-meta">
+            <div class="tiny">歡迎回來</div>
+            <div class="name" id="userNameText">白羊</div>
+          </div>
+        </div>
+        <div class="streak" id="streakText">🔥 0天連續</div>
+      </div>
+
+      <div class="quote-card">
+        <div class="quote-text" id="quoteText">「相信過程，你已比昨天的自己更好了。」🌸</div>
+      </div>
+
+      <div class="hero">
+        <div class="cloud c1">☁</div>
+        <div class="cloud c2">☁</div>
+        <div class="day-big" id="heroDayBig">Day 1</div>
+        <div class="day-sub" id="heroDaySub">第一天</div>
+        <div class="date-sub" id="heroDateSub">2026年4月8日 星期三</div>
+        <div class="hero-tip" id="calendarQuote">✨ 萬事起頭難，勇敢開始就是成功！✨</div>
+      </div>
+
+      <div class="section-title">📆 挑戰日曆</div>
+      <div class="challenge-card">
+        <div id="historyWrap"></div>
+      </div>
+
+      <div class="form-card">
+        <div class="section-title">今日打卡</div>
+        <div class="quote" id="helloText"></div>
+        <div id="todayStatusHint" class="hint"></div>
+
+        <div id="habitsBox"></div>
+
+        <div class="sub-card">
+          <div class="sub-title">🌙 今日復盤</div>
+
+          <div class="field">
+            <label class="label" for="reviewGood">✅ 今天做得好的一件事</label>
+            <textarea id="reviewGood" placeholder="哪怕只是小事，也值得被看見 🌱"></textarea>
+          </div>
+
+          <div class="field">
+            <label class="label" for="reviewBad">❌ 今天可以更好的一件事</label>
+            <textarea id="reviewBad" placeholder="不批判自己，只是觀察 💛"></textarea>
+          </div>
+
+          <div class="field" style="margin-bottom:0;">
+            <label class="label" for="reviewBetter">💡 我可以怎麼想會更好？</label>
+            <textarea id="reviewBetter" placeholder="一個小小的改變就夠了 ✨"></textarea>
+          </div>
+        </div>
+
+        <div class="btns">
+          <button id="checkinBtn" type="button">完成今日打卡</button>
+        </div>
+
+        <div class="msg" id="checkinMsg"></div>
+
+        <div class="btns">
+          <button class="small-btn" id="refreshBtn" type="button">重新整理資料</button>
+          <button class="small-btn outline-btn" id="logoutBtn" type="button">登出</button>
+        </div>
+      </div>
+
+      <div class="stats-card">
+        <div class="section-title">🏅 我的徽章</div>
+        <div id="badgeWrap"></div>
+      </div>
+
+      <div class="stats-card">
+        <div class="section-title">🏆 排行榜</div>
+        <div id="leaderboardWrap"></div>
+      </div>
+
+      <div class="stats-card">
+        <div class="section-title">成果統計</div>
+        <div id="statsWrap"></div>
+      </div>
+    </div>
   </div>
-</div>
 
-<div id="main" style="display:none">
+  <script>
+    const API = "https://script.google.com/macros/s/AKfycbyixIIX2MEvntG6Z9Dy8RQAHs9sMEukOi-GDFL3t2oT7uFaCAvLjjW3dQpGHVqGjio/exec";
 
-  <div class="card">
-    <h2 id="dayText"></h2>
-    <div id="streak"></div>
-  </div>
+    const quotes = [
+      "「相信過程，你已比昨天的自己更好了。」🌸",
+      "「慢慢來，你也正在閃閃發亮。」✨",
+      "「今天有做到一點點，也算前進。」🌷",
+      "「穩穩地走，比什麼都重要。」💛",
+      "「只要沒有放棄，你就在成長。」☀️"
+    ];
 
-  <div class="card">
-    <h3>日曆</h3>
-    <div id="calendar"></div>
-  </div>
+    const calendarQuotes = [
+      "✨ 萬事起頭難，勇敢開始就是成功！✨",
+      "🌱 今天的一小步，就是未來的一大步。",
+      "💖 你願意開始，就已經很棒了。",
+      "🌸 不急，你正在慢慢變成更好的自己。",
+      "🔥 持續下去，你會看到自己的光。"
+    ];
 
-  <div class="card">
-    <h3>今日打卡</h3>
-    <div id="habits"></div>
-    <button onclick="submitCheckin()">打卡</button>
-  </div>
+    const habitList = [
+      "早起 10 分鐘",
+      "喝足夠的水",
+      "運動 / 伸展",
+      "閱讀 10 分鐘",
+      "感恩一件事",
+      "正念安靜一下",
+      "鼓勵自己一句話"
+    ];
 
-</div>
+    const nicknameInput = document.getElementById("nickname");
+    const pinInput = document.getElementById("pin");
+    const loginBtn = document.getElementById("loginBtn");
+    const registerBtn = document.getElementById("registerBtn");
+    const loginMsg = document.getElementById("loginMsg");
 
-</div>
+    const mainPage = document.getElementById("mainPage");
+    const loginPage = document.getElementById("loginPage");
 
-<script>
+    const avatarText = document.getElementById("avatarText");
+    const userNameText = document.getElementById("userNameText");
+    const streakText = document.getElementById("streakText");
 
-const API="https://script.google.com/macros/s/AKfycbyixIIX2MEvntG6Z9Dy8RQAHs9sMEukOi-GDFL3t2oT7uFaCAvLjjW3dQpGHVqGjio/exec";
+    const quoteText = document.getElementById("quoteText");
+    const calendarQuote = document.getElementById("calendarQuote");
+    const heroDayBig = document.getElementById("heroDayBig");
+    const heroDaySub = document.getElementById("heroDaySub");
+    const heroDateSub = document.getElementById("heroDateSub");
 
-const habits=[
-"早起","喝水","運動","閱讀","感恩","冥想","自我鼓勵"
-];
+    const helloText = document.getElementById("helloText");
+    const habitsBox = document.getElementById("habitsBox");
+    const todayStatusHint = document.getElementById("todayStatusHint");
 
-function getToday(){
-  return new Date(
-    new Date().toLocaleString("en-US",{timeZone:"Asia/Taipei"})
-  );
-}
+    const reviewGood = document.getElementById("reviewGood");
+    const reviewBad = document.getElementById("reviewBad");
+    const reviewBetter = document.getElementById("reviewBetter");
 
-function format(d){
-  return d.toISOString().split("T")[0];
-}
+    const checkinBtn = document.getElementById("checkinBtn");
+    const checkinMsg = document.getElementById("checkinMsg");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const refreshBtn = document.getElementById("refreshBtn");
 
-function diff(a,b){
-  return Math.floor((b-a)/86400000);
-}
+    const historyWrap = document.getElementById("historyWrap");
+    const statsWrap = document.getElementById("statsWrap");
+    const badgeWrap = document.getElementById("badgeWrap");
+    const leaderboardWrap = document.getElementById("leaderboardWrap");
 
-function login(){
-  localStorage.setItem("user","1");
-  start();
-}
+    let scoreChart = null;
+    let habitChart = null;
+    let currentRows = [];
+    let todayExistingRecord = null;
+    let editingRecord = null;
 
-function start(){
-  document.getElementById("login").style.display="none";
-  document.getElementById("main").style.display="block";
-  render();
-}
+    quoteText.textContent = quotes[Math.floor(Math.random() * quotes.length)];
+    calendarQuote.textContent = calendarQuotes[Math.floor(Math.random() * calendarQuotes.length)];
 
-function render(){
+    function getTaipeiNow() {
+      return new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Taipei" }));
+    }
 
-  let today=getToday();
-  let todayStr=format(today);
+    function formatDateToYMD(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, "0");
+      const d = String(date.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
 
-  let startDate=localStorage.getItem("start");
-  if(!startDate){
-    localStorage.setItem("start",todayStr);
-    startDate=todayStr;
-  }
+    function formatTaiwanDate(dateStr) {
+      const parts = normalizeDateString(dateStr).split("-");
+      const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+      const week = ["日","一","二","三","四","五","六"];
+      return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 星期${week[d.getDay()]}`;
+    }
 
-  let day=diff(new Date(startDate),today)+1;
+    function numberToZh(num) {
+      const arr = ["零","一","二","三","四","五","六","七","八","九","十",
+        "十一","十二","十三","十四","十五","十六","十七","十八","十九","二十",
+        "二十一","二十二","二十三","二十四","二十五","二十六","二十七","二十八","二十九","三十"];
+      return arr[num] || String(num);
+    }
 
-  document.getElementById("dayText").innerText="Day "+day;
+    function normalizeDateString(raw) {
+      if (!raw) return "";
+      const s = String(raw).trim().replace(/\//g, "-");
+      const parts = s.split("-");
+      if (parts.length === 3) {
+        const y = parts[0];
+        const m = String(parts[1]).padStart(2, "0");
+        const d = String(parts[2]).padStart(2, "0");
+        return `${y}-${m}-${d}`;
+      }
+      return s;
+    }
 
-  renderCalendar(day);
-  renderHabits();
-}
+    function getTodayStr() {
+      const tw = getTaipeiNow();
+      return formatDateToYMD(tw);
+    }
 
-function renderCalendar(todayDay){
+    function getChallengeStartDate() {
+      let saved = localStorage.getItem("challenge_start_date");
+      const today = getTodayStr();
 
-  let html="";
-  for(let i=1;i<=30;i++){
+      if (!saved || saved === "undefined" || saved === "null") {
+        localStorage.setItem("challenge_start_date", today);
+        return today;
+      }
 
-    let cls="day";
-    if(i==todayDay) cls+=" today";
+      saved = normalizeDateString(saved);
 
-    if(localStorage.getItem("day"+i)) cls+=" done";
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(saved)) {
+        localStorage.setItem("challenge_start_date", today);
+        return today;
+      }
 
-    html+=`<div class="${cls}" onclick="loadDay(${i})">Day${i}</div>`;
-  }
+      return saved;
+    }
 
-  document.getElementById("calendar").innerHTML=html;
-}
+    function setChallengeStartDateFromRows(rows) {
+      if (!rows || !rows.length) {
+        const today = getTodayStr();
+        localStorage.setItem("challenge_start_date", today);
+        return;
+      }
 
-function renderHabits(){
+      const sorted = rows
+        .map(r => normalizeDateString(r.date))
+        .filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d))
+        .sort((a, b) => a.localeCompare(b));
 
-  let html="";
-  habits.forEach((h,i)=>{
-    html+=`<label><input type="checkbox" id="h${i}">${h}</label><br>`;
-  });
+      if (!sorted.length) {
+        const today = getTodayStr();
+        localStorage.setItem("challenge_start_date", today);
+        return;
+      }
 
-  document.getElementById("habits").innerHTML=html;
-}
+      localStorage.setItem("challenge_start_date", sorted[0]);
+    }
 
-function submitCheckin(){
+    function diffDays(dateA, dateB) {
+      const aStr = normalizeDateString(dateA);
+      const bStr = normalizeDateString(dateB);
 
-  let today=getToday();
-  let todayStr=format(today);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(aStr) || !/^\d{4}-\d{2}-\d{2}$/.test(bStr)) {
+        return 0;
+      }
 
-  let start=localStorage.getItem("start");
-  let day=diff(new Date(start),today)+1;
+      const a = new Date(aStr + "T00:00:00");
+      const b = new Date(bStr + "T00:00:00");
 
-  if(localStorage.getItem("day"+day)){
-    alert("今天已打卡");
-    return;
-  }
+      if (isNaN(a.getTime()) || isNaN(b.getTime())) {
+        return 0;
+      }
 
-  let score=0;
-  habits.forEach((h,i)=>{
-    if(document.getElementById("h"+i).checked) score++;
-  });
+      const diff = b.getTime() - a.getTime();
+      return Math.floor(diff / 86400000);
+    }
 
-  localStorage.setItem("day"+day,score);
+    function renderHabits(selected = []) {
+      habitsBox.innerHTML = "";
+      habitList.forEach((habit, index) => {
+        const item = document.createElement("label");
+        item.className = "habit-item";
+        item.innerHTML = `
+          <div class="habit-left">
+            <div class="habit-badge">${index + 1}</div>
+            <div class="habit-text">${habit}</div>
+          </div>
+          <input type="checkbox" id="habit_${index}" ${selected[index] ? "checked" : ""}>
+        `;
+        habitsBox.appendChild(item);
+      });
+    }
 
-  render();
-}
+    function getSelectedHabits() {
+      const habits = [];
+      for (let i = 0; i < habitList.length; i++) {
+        habits.push(document.getElementById(`habit_${i}`).checked);
+      }
+      return habits;
+    }
 
-function loadDay(d){
-  let score=localStorage.getItem("day"+d);
-  if(!score){
-    alert("尚未打卡");
-    return;
-  }
-  alert("Day"+d+" 分數："+score);
-}
+    function setLoading(isLoading) {
+      loginBtn.disabled = isLoading;
+      registerBtn.disabled = isLoading;
+      checkinBtn.disabled = isLoading;
+      refreshBtn.disabled = isLoading;
+    }
 
-if(localStorage.getItem("user")){
-  start();
-}
+    function showMessage(el, text, isError = false) {
+      el.textContent = text;
+      el.style.color = isError ? "#ff9e9e" : "#ffd4ba";
+    }
 
-</script>
+    function validateInput() {
+      const nickname = nicknameInput.value.trim();
+      const pin = pinInput.value.trim();
 
+      if (!nickname) {
+        showMessage(loginMsg, "請先輸入暱稱", true);
+        return null;
+      }
+
+      if (!/^\d{4}$/.test(pin)) {
+        showMessage(loginMsg, "PIN 必須是 4 位數字", true);
+        return null;
+      }
+
+      return { nickname, pin };
+    }
+
+    async function postData(data) {
+      const res = await fetch(API, {
+        method: "POST",
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8"
+        },
+        body: JSON.stringify(data)
+      });
+
+      const text = await res.text();
+
+      try {
+        return JSON.parse(text);
+      } catch (err) {
+        throw new Error("API 回傳不是 JSON：" + text);
+      }
+    }
+
+    function normalizeHistoryRows(rows) {
+      return rows.map(row => ({
+        id: String(row[0] || "").trim(),
+        user_id: String(row[1] || "").trim(),
+        date: normalizeDateString(row[2]),
+        habits: [row[3], row[4], row[5], row[6], row[7], row[8], row[9]].map(v => {
+          return v === true || v === "TRUE" || v === "true";
+        }),
+        score: Number(row[10]) || 0,
+        review_good: String(row[11] || ""),
+        review_bad: String(row[12] || ""),
+        review_better: String(row[13] || ""),
+        created_at: row[14] || ""
+      }));
+    }
+
+    function updateHeaderUI() {
+      const nickname = localStorage.getItem("nickname") || "你";
+      const firstChar = nickname.charAt(0) || "你";
+      avatarText.textContent = firstChar;
+      userNameText.textContent = nickname;
+      helloText.textContent = `${nickname}，今天也一起變得更好 💐`;
+    }
+
+    function calculateStreak(rows) {
+      if (!Array.isArray(rows) || rows.length === 0) return 0;
+
+      const today = getTodayStr();
+
+      const dateSet = new Set(
+        rows
+          .map(r => normalizeDateString(r.date))
+          .filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d))
+      );
+
+      if (!dateSet.has(today)) {
+        return 0;
+      }
+
+      let streak = 1;
+      let cursor = new Date(today + "T00:00:00");
+
+      while (true) {
+        cursor.setDate(cursor.getDate() - 1);
+        const prev = formatDateToYMD(cursor);
+
+        if (dateSet.has(prev)) {
+          streak++;
+        } else {
+          break;
+        }
+      }
+
+      return streak;
+    }
+
+    function updateHero(rows) {
+      const startDate = getChallengeStartDate();
+      const today = getTodayStr();
+
+      let dayNum = diffDays(startDate, today) + 1;
+
+      if (!Number.isFinite(dayNum) || dayNum < 1) dayNum = 1;
+      if (dayNum > 30) dayNum = 30;
+
+      heroDayBig.textContent = `Day ${dayNum}`;
+      heroDaySub.textContent = `第${numberToZh(dayNum)}天`;
+      heroDateSub.textContent = formatTaiwanDate(today);
+
+      const streak = calculateStreak(rows);
+      streakText.textContent = `🔥 ${streak}天連續`;
+    }
+
+    async function registerUser() {
+      const form = validateInput();
+      if (!form) return;
+
+      setLoading(true);
+      showMessage(loginMsg, "註冊中...");
+
+      try {
+        const data = await postData({
+          action: "register",
+          nickname: form.nickname,
+          pin: form.pin
+        });
+
+        if (data.status === "success") {
+          localStorage.setItem("user_id", data.user_id);
+          localStorage.setItem("nickname", form.nickname);
+          localStorage.setItem("challenge_start_date", getTodayStr());
+          showMessage(loginMsg, "註冊成功");
+          await enterMainPage();
+        } else {
+          showMessage(loginMsg, data.message || "註冊失敗", true);
+        }
+      } catch (error) {
+        showMessage(loginMsg, "註冊失敗：" + error.message, true);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    async function loginUser() {
+      const form = validateInput();
+      if (!form) return;
+
+      setLoading(true);
+      showMessage(loginMsg, "登入中...");
+
+      try {
+        const data = await postData({
+          action: "login",
+          nickname: form.nickname,
+          pin: form.pin
+        });
+
+        if (data.status === "success") {
+          localStorage.setItem("user_id", data.user_id);
+          localStorage.setItem("nickname", form.nickname);
+          showMessage(loginMsg, "登入成功");
+          await enterMainPage();
+        } else {
+          showMessage(loginMsg, "登入失敗，請確認暱稱與 PIN", true);
+        }
+      } catch (error) {
+        showMessage(loginMsg, "登入失敗：" + error.message, true);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    async function fetchHistoryData() {
+      const userId = localStorage.getItem("user_id");
+      if (!userId) throw new Error("尚未登入");
+
+      const data = await postData({
+        action: "getData",
+        user_id: userId
+      });
+
+      if (data.status !== "success") {
+        throw new Error(data.message || "取得資料失敗");
+      }
+
+      return normalizeHistoryRows(data.data || []);
+    }
+
+    async function fetchLeaderboard() {
+      const data = await postData({ action: "getLeaderboard" });
+      if (data.status !== "success") {
+        throw new Error(data.message || "取得排行榜失敗");
+      }
+      return data.data || [];
+    }
+
+    function fillFormWithRecord(record) {
+      renderHabits(record?.habits || []);
+      reviewGood.value = record?.review_good || "";
+      reviewBad.value = record?.review_bad || "";
+      reviewBetter.value = record?.review_better || "";
+    }
+
+    function clearTodayForm() {
+      renderHabits([]);
+      reviewGood.value = "";
+      reviewBad.value = "";
+      reviewBetter.value = "";
+    }
+
+    function updateTodayStatus() {
+      const today = getTodayStr();
+
+      if (editingRecord) {
+        todayStatusHint.textContent = `目前正在編輯 ${editingRecord.date} 的紀錄，修改後按「完成今日打卡」即可儲存。`;
+        checkinBtn.disabled = false;
+        return;
+      }
+
+      if (todayExistingRecord && normalizeDateString(todayExistingRecord.date) === today) {
+        todayStatusHint.textContent = `今天已經打卡完成，請到上方挑戰日曆點今天的 Day 卡片進行編輯。`;
+        checkinBtn.disabled = true;
+      } else {
+        todayStatusHint.textContent = "今天還沒打卡，完成後會立即顯示在挑戰日曆上。";
+        checkinBtn.disabled = false;
+      }
+    }
+
+    async function refreshAllViews() {
+      currentRows = await fetchHistoryData();
+      setChallengeStartDateFromRows(currentRows);
+
+      const today = getTodayStr();
+      todayExistingRecord = currentRows.find(r => normalizeDateString(r.date) === today) || null;
+
+      if (!editingRecord) {
+        if (todayExistingRecord) {
+          fillFormWithRecord(todayExistingRecord);
+        } else {
+          clearTodayForm();
+        }
+      }
+
+      updateHeaderUI();
+      updateHero(currentRows);
+      updateTodayStatus();
+      renderChallengeCalendar(currentRows);
+      renderStats(currentRows);
+      renderBadges(currentRows);
+      await renderLeaderboard();
+    }
+
+    async function enterMainPage() {
+      loginPage.classList.add("hidden");
+      mainPage.classList.remove("hidden");
+      editingRecord = null;
+      updateHeaderUI();
+      await refreshAllViews();
+    }
+
+    async function createTodayCheckin() {
+      const userId = localStorage.getItem("user_id");
+      if (!userId) {
+        showMessage(checkinMsg, "請先登入", true);
+        return;
+      }
+
+      if (todayExistingRecord) {
+        showMessage(checkinMsg, "今天已經打卡過了，請到挑戰日曆點今天進行編輯。", true);
+        return;
+      }
+
+      const habits = getSelectedHabits();
+
+      setLoading(true);
+      showMessage(checkinMsg, "送出今日打卡中...");
+
+      try {
+        const data = await postData({
+          action: "checkin",
+          user_id: userId,
+          date: getTodayStr(),
+          habits: habits,
+          review_good: reviewGood.value.trim(),
+          review_bad: reviewBad.value.trim(),
+          review_better: reviewBetter.value.trim()
+        });
+
+        if (data.status === "success") {
+          showMessage(checkinMsg, `今日打卡成功，得分 ${data.score}/7 ✨`);
+          editingRecord = null;
+
+          currentRows = await fetchHistoryData();
+          setChallengeStartDateFromRows(currentRows);
+
+          const today = getTodayStr();
+          todayExistingRecord = currentRows.find(r => normalizeDateString(r.date) === today) || null;
+
+          updateHero(currentRows);
+          updateTodayStatus();
+          renderChallengeCalendar(currentRows);
+          renderStats(currentRows);
+          renderBadges(currentRows);
+          await renderLeaderboard();
+
+          if (todayExistingRecord) {
+            fillFormWithRecord(todayExistingRecord);
+          }
+
+          setTimeout(() => {
+            const startDate = getChallengeStartDate();
+            const today2 = getTodayStr();
+            const dayNum = diffDays(startDate, today2) + 1;
+            const tile = historyWrap.querySelector(`[data-day="${dayNum}"]`);
+            if (tile) {
+              tile.classList.add("unlock-animate");
+              setTimeout(() => tile.classList.remove("unlock-animate"), 600);
+            }
+          }, 80);
+
+        } else {
+          showMessage(checkinMsg, data.message || "打卡失敗", true);
+        }
+      } catch (error) {
+        showMessage(checkinMsg, "打卡失敗：" + error.message, true);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    async function updateCheckin(recordId, dateStr) {
+      const userId = localStorage.getItem("user_id");
+      if (!userId) {
+        showMessage(checkinMsg, "請先登入", true);
+        return;
+      }
+
+      const habits = getSelectedHabits();
+
+      setLoading(true);
+      showMessage(checkinMsg, "更新紀錄中...");
+
+      try {
+        const data = await postData({
+          action: "updateCheckin",
+          record_id: recordId,
+          user_id: userId,
+          date: dateStr,
+          habits: habits,
+          review_good: reviewGood.value.trim(),
+          review_bad: reviewBad.value.trim(),
+          review_better: reviewBetter.value.trim()
+        });
+
+        if (data.status === "success") {
+          showMessage(checkinMsg, `已更新 ${dateStr} 的打卡紀錄，得分 ${data.score}/7`);
+          editingRecord = null;
+          await refreshAllViews();
+        } else {
+          showMessage(checkinMsg, data.message || "更新失敗", true);
+        }
+      } catch (error) {
+        showMessage(checkinMsg, "更新失敗：" + error.message, true);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    async function handleCheckinSubmit() {
+      if (editingRecord) {
+        await updateCheckin(editingRecord.id, editingRecord.date);
+      } else {
+        await createTodayCheckin();
+      }
+    }
+
+    function loadRecordToForm(row) {
+      editingRecord = row;
+      fillFormWithRecord(row);
+
+      checkinBtn.disabled = false;
+      todayStatusHint.textContent = `目前正在編輯 ${row.date} 的紀錄，修改後按「完成今日打卡」即可儲存。`;
+
+      window.scrollTo({
+        top: document.querySelector(".form-card").offsetTop - 10,
+        behavior: "smooth"
+      });
+
+      showMessage(checkinMsg, `已載入 ${row.date} 的舊紀錄，可以直接修改。`);
+    }
+
+    function renderChallengeCalendar(rows) {
+      const startDate = getChallengeStartDate();
+      const today = getTodayStr();
+      const todayIndex = diffDays(startDate, today) + 1;
+
+      const dayMap = {};
+      rows.forEach(item => {
+        const normalizedDate = normalizeDateString(item.date);
+        const dayIndex = diffDays(startDate, normalizedDate) + 1;
+
+        if (dayIndex >= 1 && dayIndex <= 30) {
+          dayMap[dayIndex] = {
+            ...item,
+            date: normalizedDate
+          };
+        }
+      });
+
+      let html = `<div class="challenge-grid">`;
+
+      for (let i = 1; i <= 30; i++) {
+        const item = dayMap[i];
+        const isToday = i === todayIndex;
+        const isPast = i < todayIndex;
+        const isFuture = i > todayIndex;
+
+        let classes = ["day-tile"];
+        let icon = "🔒";
+        let sub = `Day${i}`;
+        let clickable = false;
+
+        if (item) {
+          classes.push("done");
+          if (isToday) classes.push("today");
+          icon = "🌟";
+          sub = `已打卡 ${item.score}/7`;
+          clickable = true;
+        } else if (isToday) {
+          classes.push("pending", "today");
+          icon = "🫥";
+          sub = "未打卡";
+        } else if (isPast) {
+          classes.push("pending");
+          icon = "⭕";
+          sub = "未完成";
+        } else if (isFuture) {
+          classes.push("future");
+          icon = "🔒";
+          sub = "未解鎖";
+        }
+
+        html += `
+          <div class="${classes.join(" ")}" ${clickable ? `data-day="${i}"` : ""}>
+            <div class="tile-icon">${icon}</div>
+            <div class="tile-title">Day${i}</div>
+            <div class="tile-sub">${sub}</div>
+            <div class="tile-dot"></div>
+          </div>
+        `;
+      }
+
+      html += `</div>`;
+      historyWrap.innerHTML = html;
+
+      historyWrap.querySelectorAll(".day-tile[data-day]").forEach(tile => {
+        tile.addEventListener("click", () => {
+          const dayNum = Number(tile.getAttribute("data-day"));
+          const row = dayMap[dayNum];
+          if (!row) return;
+
+          loadRecordToForm(row);
+
+          showMessage(
+            checkinMsg,
+            `已載入 Day${dayNum}（${row.date}）的紀錄，現在可以直接修改後按「完成今日打卡」。`
+          );
+        });
+      });
+    }
+
+    function getBadges(rows) {
+      const totalDays = rows.length;
+      const totalScore = rows.reduce((sum, r) => sum + (Number(r.score) || 0), 0);
+      const streak = calculateStreak(rows);
+
+      return [
+        { icon:"🌱", title:"啟程徽章", desc:"完成第 1 次打卡", unlocked: totalDays >= 1 },
+        { icon:"🔥", title:"連續 3 天", desc:"持續打卡 3 天", unlocked: streak >= 3 },
+        { icon:"🌟", title:"連續 7 天", desc:"持續打卡 7 天", unlocked: streak >= 7 },
+        { icon:"💪", title:"穩定前進", desc:"累積 10 次打卡", unlocked: totalDays >= 10 },
+        { icon:"🏅", title:"高分行動派", desc:"總分達到 50 分", unlocked: totalScore >= 50 },
+        { icon:"👑", title:"30天勇者", desc:"累積 30 次打卡", unlocked: totalDays >= 30 }
+      ];
+    }
+
+    function renderBadges(rows) {
+      const badges = getBadges(rows);
+
+      badgeWrap.innerHTML = `
+        <div class="badge-grid">
+          ${badges.map(b => `
+            <div class="badge-card ${b.unlocked ? "unlocked" : ""}">
+              <div class="badge-icon">${b.unlocked ? b.icon : "🔒"}</div>
+              <div class="badge-title">${b.title}</div>
+              <div class="badge-desc">${b.desc}</div>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    async function renderLeaderboard() {
+      try {
+        const rows = await fetchLeaderboard();
+
+        if (!rows.length) {
+          leaderboardWrap.innerHTML = `<div class="msg">目前還沒有排行榜資料</div>`;
+          return;
+        }
+
+        leaderboardWrap.innerHTML = `
+          <div class="rank-list">
+            ${rows.map((item, index) => `
+              <div class="rank-item">
+                <div class="rank-left">
+                  <div class="rank-no">${index + 1}</div>
+                  <div class="rank-name">${item.nickname}</div>
+                </div>
+                <div class="rank-score">${item.totalScore} 分｜${item.days} 天</div>
+              </div>
+            `).join("")}
+          </div>
+        `;
+      } catch (error) {
+        leaderboardWrap.innerHTML = `<div class="msg">${error.message}</div>`;
+      }
+    }
+
+    function renderStats(rows) {
+      if (!rows.length) {
+        statsWrap.innerHTML = `<div class="msg">還沒有統計資料喔</div>`;
+        if (scoreChart) {
+          scoreChart.destroy();
+          scoreChart = null;
+        }
+        if (habitChart) {
+          habitChart.destroy();
+          habitChart = null;
+        }
+        return;
+      }
+
+      const sorted = [...rows].sort((a, b) => a.date.localeCompare(b.date));
+      const recent7 = sorted.slice(-7);
+
+      const habitTotals = Array(7).fill(0);
+      sorted.forEach(item => {
+        item.habits.forEach((done, i) => {
+          if (done) habitTotals[i]++;
+        });
+      });
+
+      const totalPossible = sorted.length * 7;
+      const totalDone = sorted.reduce((sum, item) => sum + item.score, 0);
+      const rate = totalPossible ? Math.round((totalDone / totalPossible) * 100) : 0;
+
+      statsWrap.innerHTML = `
+        <div class="chart-card">
+          <div class="chart-title">累積達成率</div>
+          <div style="text-align:center;font-size:30px;color:#fff0db;">${rate}%</div>
+          <div class="hint">共完成 ${totalDone} / ${totalPossible} 次習慣</div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-title">近 7 次打卡分數</div>
+          <canvas id="scoreChartCanvas"></canvas>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-title">7 個習慣累積完成次數</div>
+          <canvas id="habitChartCanvas"></canvas>
+        </div>
+      `;
+
+      const scoreCtx = document.getElementById("scoreChartCanvas");
+      const habitCtx = document.getElementById("habitChartCanvas");
+
+      if (scoreChart) scoreChart.destroy();
+      if (habitChart) habitChart.destroy();
+
+      scoreChart = new Chart(scoreCtx, {
+        type: "line",
+        data: {
+          labels: recent7.map(item => item.date.slice(5)),
+          datasets: [{
+            label: "每日分數",
+            data: recent7.map(item => item.score),
+            tension: 0.35,
+            fill: false,
+            borderColor: "#ffb07b",
+            backgroundColor: "#ffb07b"
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              labels: { color: "#fff0db" }
+            }
+          },
+          scales: {
+            x: {
+              ticks: { color: "#ffe3cf" },
+              grid: { color: "rgba(255,255,255,0.08)" }
+            },
+            y: {
+              beginAtZero: true,
+              max: 7,
+              ticks: { stepSize: 1, color: "#ffe3cf" },
+              grid: { color: "rgba(255,255,255,0.08)" }
+            }
+          }
+        }
+      });
+
+      habitChart = new Chart(habitCtx, {
+        type: "bar",
+        data: {
+          labels: habitList.map((item, i) => `${i + 1}`),
+          datasets: [{
+            label: "完成次數",
+            data: habitTotals,
+            backgroundColor: "rgba(255, 176, 123, 0.7)",
+            borderColor: "#ffb07b",
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              labels: { color: "#fff0db" }
+            },
+            tooltip: {
+              callbacks: {
+                title: function(context) {
+                  const idx = context[0].dataIndex;
+                  return `${idx + 1}. ${habitList[idx]}`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              ticks: { color: "#ffe3cf" },
+              grid: { color: "rgba(255,255,255,0.05)" }
+            },
+            y: {
+              beginAtZero: true,
+              ticks: { color: "#ffe3cf" },
+              grid: { color: "rgba(255,255,255,0.08)" }
+            }
+          }
+        }
+      });
+    }
+
+    function logout() {
+      localStorage.removeItem("user_id");
+      localStorage.removeItem("nickname");
+      currentRows = [];
+      todayExistingRecord = null;
+      editingRecord = null;
+      clearTodayForm();
+      historyWrap.innerHTML = "";
+      statsWrap.innerHTML = "";
+      badgeWrap.innerHTML = "";
+      leaderboardWrap.innerHTML = "";
+      mainPage.classList.add("hidden");
+      loginPage.classList.remove("hidden");
+      nicknameInput.value = "";
+      pinInput.value = "";
+      showMessage(loginMsg, "已登出");
+      showMessage(checkinMsg, "");
+    }
+
+    loginBtn.addEventListener("click", loginUser);
+    registerBtn.addEventListener("click", registerUser);
+    checkinBtn.addEventListener("click", handleCheckinSubmit);
+    logoutBtn.addEventListener("click", logout);
+    refreshBtn.addEventListener("click", async () => {
+      editingRecord = null;
+      showMessage(checkinMsg, "資料重新整理中...");
+      await refreshAllViews();
+      showMessage(checkinMsg, "資料已更新");
+    });
+
+    if (localStorage.getItem("user_id")) {
+      enterMainPage();
+    } else {
+      renderHabits([]);
+    }
+  </script>
 </body>
 </html>
