@@ -1054,7 +1054,7 @@
       heroDateSub.textContent = formatTaiwanDate(today);
 
       const streak = calculateStreak(rows);
-      streakText.textContent = streak === 1 ? "🔥 第1天" : `🔥 ${streak}天連續`;
+      streakText.textContent = streak === 1 ? "🔥 第1天" : `🔥 ${streak+1}天連續`;
     }
 
     async function registerUser() {
