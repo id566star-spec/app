@@ -443,7 +443,7 @@
   </div>
 
   <script>
-    const API = "https://script.google.com/macros/s/AKfycbx4mEsUFeBq2XwWQurV6MV7ggMFzMiO0XSZq3tb_21GHmvGo0Syjfl0u58xv-SDTTSK/exec";
+    const API = "請改成你的 Apps Script /exec 網址";
 
     const quotes = [
       "不要小心計算如何，先把今天挺住就夠好了。",
@@ -857,7 +857,7 @@
 
       const map = {};
       rows.forEach(item => {
-        if (item.date && !map[item.date]) {
+        if (item.date) {
           map[item.date] = item;
         }
       });
@@ -884,13 +884,14 @@
         const score = hasRecord ? item.score : 0;
         const emoji = hasRecord ? getEmojiByScore(score) : "";
         const classes = ["day-cell"];
+
         if (dateStr === today) classes.push("today-mark");
         if (hasRecord) classes.push("has-record");
 
         html += `
           <div class="${classes.join(" ")}" ${hasRecord ? `data-date="${dateStr}"` : ""}>
             <div class="day-num">${day}</div>
-            <div class="day-emoji">${emoji || ""}</div>
+            <div class="day-emoji">${hasRecord ? emoji : ""}</div>
             <div class="day-score">${hasRecord ? `${score}/7` : ""}</div>
             ${hasRecord ? `<div class="record-dot"></div>` : ""}
           </div>
@@ -904,7 +905,10 @@
         cell.addEventListener("click", () => {
           const date = cell.getAttribute("data-date");
           const row = rows.find(r => r.date === date);
-          if (row) showDetail(row);
+          if (row) {
+            loadRecordToForm(row);
+            showDetail(row);
+          }
         });
       });
     }
