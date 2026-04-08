@@ -68,7 +68,7 @@
       display: block;
     }
 
-    input, textarea, select {
+    input, textarea {
       width: 100%;
       border: none;
       outline: none;
@@ -136,6 +136,7 @@
       font-size: 14px;
       min-height: 22px;
       color: #8f6e5d;
+      line-height: 1.6;
     }
 
     .hidden {
@@ -277,6 +278,7 @@
       line-height: 1.7;
       color: #5f4b41;
       font-size: 14px;
+      word-break: break-word;
     }
 
     .modal-mask {
@@ -325,6 +327,7 @@
       color: #9b877a;
       font-size: 13px;
       margin-top: 8px;
+      line-height: 1.6;
     }
   </style>
 </head>
@@ -390,8 +393,7 @@
         <div class="msg" id="checkinMsg"></div>
 
         <div class="btns">
-          <button class="small-btn" id="loadHistoryBtn" type="button">查看本月紀錄</button>
-          <button class="small-btn" id="loadStatsBtn" type="button">查看統計圖表</button>
+          <button class="small-btn" id="refreshBtn" type="button">重新整理資料</button>
           <button class="small-btn outline-btn" id="logoutBtn" type="button">登出</button>
         </div>
       </div>
@@ -419,7 +421,7 @@
   </div>
 
   <script>
-    const API = "https://script.google.com/macros/s/AKfycbz5PzWlMoutW7x4j4zFK6FJknVCfuHw7mnFinuB7u1OmCS9PD5TPtBe1DlADFXcLNc-/exec";
+    const API = "請改成你的 Apps Script /exec 網址";
 
     const quotes = [
       "不要小心計算如何，先把今天挺住就夠好了。",
@@ -459,8 +461,7 @@
     const checkinBtn = document.getElementById("checkinBtn");
     const checkinMsg = document.getElementById("checkinMsg");
     const logoutBtn = document.getElementById("logoutBtn");
-    const loadHistoryBtn = document.getElementById("loadHistoryBtn");
-    const loadStatsBtn = document.getElementById("loadStatsBtn");
+    const refreshBtn = document.getElementById("refreshBtn");
 
     const historyWrap = document.getElementById("historyWrap");
     const statsWrap = document.getElementById("statsWrap");
@@ -513,8 +514,7 @@
       loginBtn.disabled = isLoading;
       registerBtn.disabled = isLoading;
       checkinBtn.disabled = isLoading;
-      loadHistoryBtn.disabled = isLoading;
-      loadStatsBtn.disabled = isLoading;
+      refreshBtn.disabled = isLoading;
     }
 
     function showMessage(el, text, isError = false) {
@@ -530,10 +530,12 @@
         showMessage(loginMsg, "請先輸入暱稱", true);
         return null;
       }
-     if (!/^\d{4}$/.test(pin)) {
+
+      if (!/^\d{4}$/.test(pin)) {
         showMessage(loginMsg, "PIN 必須是 4 位數字", true);
         return null;
       }
+
       return { nickname, pin };
     }
 
@@ -560,7 +562,9 @@
         id: String(row[0] || ""),
         user_id: String(row[1] || ""),
         date: String(row[2] || ""),
-        habits: [row[3], row[4], row[5], row[6], row[7], row[8], row[9]].map(v => v === true || v === "TRUE" || v === "true"),
+        habits: [row[3], row[4], row[5], row[6], row[7], row[8], row[9]].map(v => {
+          return v === true || v === "TRUE" || v === "true";
+        }),
         score: Number(row[10]) || 0,
         review_good: String(row[11] || ""),
         review_bad: String(row[12] || ""),
@@ -661,11 +665,17 @@
       const nickname = localStorage.getItem("nickname") || "你";
       helloText.textContent = `${nickname}，今天也一起慢慢變好 🌷`;
 
+      if (editingRecord) {
+        todayStatusHint.textContent = `目前正在編輯 ${editingRecord.date} 的紀錄，修改後按「完成今日打卡」即可儲存。`;
+        checkinBtn.disabled = false;
+        return;
+      }
+
       if (todayExistingRecord) {
-        todayStatusHint.textContent = `今天已打卡，可在月曆中點今天進行編輯。今日分數：${todayExistingRecord.score}/7`;
+        todayStatusHint.textContent = `今天已打卡，今日分數：${todayExistingRecord.score}/7。若要修改，請點月曆中的今天。`;
         checkinBtn.disabled = true;
       } else {
-        todayStatusHint.textContent = "今天還沒打卡，完成後就能記錄在月曆上。";
+        todayStatusHint.textContent = "今天還沒打卡，完成後就會記錄到月曆上。";
         checkinBtn.disabled = false;
       }
     }
@@ -724,7 +734,11 @@
         });
 
         if (data.status === "success") {
-          showMessage(checkinMsg, `今日打卡成功，得分 ${data.score}/7 ✨`);
+          if (data.mode === "updated") {
+            showMessage(checkinMsg, `今天已有紀錄，系統已幫你更新為 ${data.score}/7 ✨`);
+          } else {
+            showMessage(checkinMsg, `今日打卡成功，得分 ${data.score}/7 ✨`);
+          }
           editingRecord = null;
           await refreshAllViews();
         } else {
@@ -792,11 +806,6 @@
     }
 
     function renderCalendar(rows) {
-      if (!rows.length) {
-        historyWrap.innerHTML = `<div class="msg">還沒有打卡紀錄喔</div>`;
-        return;
-      }
-
       const now = new Date();
       const year = now.getFullYear();
       const month = now.getMonth();
@@ -808,7 +817,9 @@
 
       const map = {};
       rows.forEach(item => {
-        map[item.date] = item;
+        if (!map[item.date]) {
+          map[item.date] = item;
+        }
       });
 
       let html = `
@@ -884,7 +895,7 @@
         fillFormWithRecord(row);
         detailModal.classList.add("hidden");
         window.scrollTo({ top: 0, behavior: "smooth" });
-        checkinBtn.disabled = false;
+        updateTodayStatus();
         showMessage(checkinMsg, `正在編輯 ${row.date} 的紀錄，修改後按「完成今日打卡」即可儲存。`);
       });
     }
@@ -892,8 +903,14 @@
     function renderStats(rows) {
       if (!rows.length) {
         statsWrap.innerHTML = `<div class="msg">還沒有統計資料喔</div>`;
-        if (scoreChart) scoreChart.destroy();
-        if (habitChart) habitChart.destroy();
+        if (scoreChart) {
+          scoreChart.destroy();
+          scoreChart = null;
+        }
+        if (habitChart) {
+          habitChart.destroy();
+          habitChart = null;
+        }
         return;
       }
 
@@ -1002,8 +1019,12 @@
     registerBtn.addEventListener("click", registerUser);
     checkinBtn.addEventListener("click", handleCheckinSubmit);
     logoutBtn.addEventListener("click", logout);
-    loadHistoryBtn.addEventListener("click", refreshAllViews);
-    loadStatsBtn.addEventListener("click", refreshAllViews);
+    refreshBtn.addEventListener("click", async () => {
+      editingRecord = null;
+      showMessage(checkinMsg, "資料重新整理中...");
+      await refreshAllViews();
+      showMessage(checkinMsg, "資料已更新");
+    });
     closeDetailBtn.addEventListener("click", () => detailModal.classList.add("hidden"));
     detailModal.addEventListener("click", (e) => {
       if (e.target === detailModal) detailModal.classList.add("hidden");
