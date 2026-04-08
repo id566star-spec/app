@@ -570,49 +570,6 @@
       color: #ffd6bb;
     }
 
-    .modal-mask{
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,.45);
-      z-index:999;
-      padding:16px;
-      overflow:auto;
-    }
-
-    .modal-card{
-      max-width:430px;
-      margin:30px auto;
-      background:#5a2b00;
-      border-radius:22px;
-      padding:18px 14px 20px;
-      box-shadow:0 16px 40px rgba(0,0,0,.22);
-      border:1px solid rgba(255,255,255,.10);
-    }
-
-    .modal-top{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:8px;
-      margin-bottom:12px;
-    }
-
-    .modal-title{
-      font-size:22px;
-      color:#fff0db;
-    }
-
-    .score-pill{
-      display:inline-block;
-      background:rgba(255,214,188,.12);
-      color:#ffd7bd;
-      padding:6px 10px;
-      border-radius:999px;
-      font-size:14px;
-      margin-top:6px;
-      border:1px solid rgba(255,255,255,.08);
-    }
-
     @media (max-width:380px){
       .challenge-grid{
         gap:10px;
@@ -731,16 +688,6 @@
         <div class="section-title">成果統計</div>
         <div id="statsWrap"></div>
       </div>
-    </div>
-  </div>
-
-  <div id="detailModal" class="modal-mask hidden">
-    <div class="modal-card">
-      <div class="modal-top">
-        <div class="modal-title">當日紀錄</div>
-        <button class="small-btn" id="closeDetailBtn" type="button">關閉</button>
-      </div>
-      <div id="detailContent"></div>
     </div>
   </div>
 
@@ -1011,17 +958,19 @@
     }
 
     function calculateStreak(rows) {
-      if (!rows || !rows.length) return 0;
+      if (!Array.isArray(rows) || rows.length === 0) return 0;
+
+      const today = getTodayStr();
 
       const dateSet = new Set(
         rows
           .map(r => normalizeDateString(r.date))
-          .filter(Boolean)
+          .filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d))
       );
 
-      const today = getTodayStr();
-
-      if (!dateSet.has(today)) return 0;
+      if (!dateSet.has(today)) {
+        return 0;
+      }
 
       let streak = 1;
       let cursor = new Date(today + "T00:00:00");
@@ -1054,7 +1003,7 @@
       heroDateSub.textContent = formatTaiwanDate(today);
 
       const streak = calculateStreak(rows);
-      streakText.textContent = streak === 1 ? "🔥 第1天" : `🔥 ${streak}天連續`;
+      streakText.textContent = `🔥 ${streak}天連續`;
     }
 
     async function registerUser() {
@@ -1242,12 +1191,12 @@
           const today = getTodayStr();
           todayExistingRecord = currentRows.find(r => normalizeDateString(r.date) === today) || null;
 
+          updateHero(currentRows);
+          updateTodayStatus();
           renderChallengeCalendar(currentRows);
           renderStats(currentRows);
           renderBadges(currentRows);
           await renderLeaderboard();
-          updateHero(currentRows);
-          updateTodayStatus();
 
           if (todayExistingRecord) {
             fillFormWithRecord(todayExistingRecord);
