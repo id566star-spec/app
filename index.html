@@ -530,7 +530,7 @@
         showMessage(loginMsg, "請先輸入暱稱", true);
         return null;
       }
-      if (!/^\\d{4}$/.test(pin)) {
+     if (!/^\d{4}$/.test(pin)) {
         showMessage(loginMsg, "PIN 必須是 4 位數字", true);
         return null;
       }
