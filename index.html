@@ -625,7 +625,7 @@
   </div>
 
   <script>
-    const API = "https://script.google.com/macros/s/AKfycbzHormlgobgPEv8ltExWctbY3pEr-GWJTMblPnNP9GB_g2D7zkeRQPx3wnD__jJ8-3n/exec";
+    const API = "https://script.google.com/macros/s/AKfycbxmLMOw7WrSJ8BXed3KCOsyvewY8gUeQ6TccOHZMothpTc4R59WTGpyI4XPO_1zc4YH/exec";
 
     const quotes = [
       "「相信過程，你已比昨天的自己更好了。」🌸",
@@ -720,19 +720,45 @@
 
     function normalizeDateString(raw) {
       if (!raw) return "";
-      const s = String(raw).trim().replace(/\//g, "-");
-      const parts = s.split("-");
-      if (parts.length === 3) {
-        const y = parts[0];
-        const m = String(parts[1]).padStart(2, "0");
-        const d = String(parts[2]).padStart(2, "0");
+
+      if (raw instanceof Date && !isNaN(raw)) {
+        return formatDateToYMD(raw);
+      }
+
+      const s = String(raw).trim();
+      if (!s) return "";
+
+      if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+
+      const isoMatch = s.match(/^(\d{4})-(\d{2})-(\d{2})T/);
+      if (isoMatch) {
+        return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
+      }
+
+      const slashOrDash = s.replace(/\//g, "-");
+      const simpleMatch = slashOrDash.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+      if (simpleMatch) {
+        const y = simpleMatch[1];
+        const m = String(simpleMatch[2]).padStart(2, "0");
+        const d = String(simpleMatch[3]).padStart(2, "0");
         return `${y}-${m}-${d}`;
       }
-      return s;
+
+      const parsed = new Date(s);
+      if (!isNaN(parsed.getTime())) {
+        const y = parsed.getUTCFullYear();
+        const m = String(parsed.getUTCMonth() + 1).padStart(2, "0");
+        const d = String(parsed.getUTCDate()).padStart(2, "0");
+        return `${y}-${m}-${d}`;
+      }
+
+      return "";
     }
 
     function formatTaiwanDate(dateStr) {
-      const parts = normalizeDateString(dateStr).split("-");
+      const normalized = normalizeDateString(dateStr);
+      if (!normalized) return "";
+      const parts = normalized.split("-");
       const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
       const week = ["日","一","二","三","四","五","六"];
       return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 星期${week[d.getDay()]}`;
@@ -746,8 +772,11 @@
     }
 
     function diffDays(dateA, dateB) {
-      const a = new Date(normalizeDateString(dateA) + "T00:00:00");
-      const b = new Date(normalizeDateString(dateB) + "T00:00:00");
+      const aStr = normalizeDateString(dateA);
+      const bStr = normalizeDateString(dateB);
+      if (!aStr || !bStr) return 0;
+      const a = new Date(aStr + "T00:00:00");
+      const b = new Date(bStr + "T00:00:00");
       if (isNaN(a.getTime()) || isNaN(b.getTime())) return 0;
       return Math.floor((b.getTime() - a.getTime()) / 86400000);
     }
@@ -840,7 +869,8 @@
     function getSelectedHabits() {
       const habits = [];
       for (let i = 0; i < habitList.length; i++) {
-        habits.push(document.getElementById(`habit_${i}`).checked);
+        const el = document.getElementById(`habit_${i}`);
+        habits.push(el ? el.checked : false);
       }
       return habits;
     }
@@ -972,18 +1002,11 @@
       const today = getTodayStr();
 
       if (editingRecord) {
-        const isEditingToday = normalizeDateString(editingRecord.date) === today;
-
-        todayHabitStatus.textContent = `目前正在編輯 ${editingRecord.date} 的習慣打卡資料。`;
-        todayReviewStatus.textContent = `目前正在編輯 ${editingRecord.date} 的每日復盤資料。`;
-
-        if (isEditingToday) {
-          checkinBtn.disabled = false;
-          reviewBtn.disabled = false;
-        } else {
-          checkinBtn.disabled = false;
-          reviewBtn.disabled = false;
-        }
+        const editingDate = normalizeDateString(editingRecord.date);
+        todayHabitStatus.textContent = `目前正在編輯 ${editingDate} 的習慣打卡資料。`;
+        todayReviewStatus.textContent = `目前正在編輯 ${editingDate} 的每日復盤資料。`;
+        checkinBtn.disabled = false;
+        reviewBtn.disabled = false;
         return;
       }
 
@@ -1147,7 +1170,7 @@
             action: "updateHabitOnly",
             record_id: baseRecord.id,
             user_id: userId,
-            date: baseRecord.date,
+            date: normalizeDateString(baseRecord.date),
             habits: habits
           });
 
@@ -1217,7 +1240,7 @@
             action: "updateReviewOnly",
             record_id: baseRecord.id,
             user_id: userId,
-            date: baseRecord.date,
+            date: normalizeDateString(baseRecord.date),
             review_good: good,
             review_bad: bad,
             review_better: better
@@ -1257,13 +1280,18 @@
     }
 
     function loadRecordToForm(row) {
-      editingRecord = row;
-      fillFormWithRecord(row);
+      editingRecord = {
+        ...row,
+        date: normalizeDateString(row.date)
+      };
+
+      fillFormWithRecord(editingRecord);
 
       checkinBtn.disabled = false;
       reviewBtn.disabled = false;
-      todayHabitStatus.textContent = `目前正在編輯 ${row.date} 的習慣打卡資料。`;
-      todayReviewStatus.textContent = `目前正在編輯 ${row.date} 的每日復盤資料。`;
+
+      todayHabitStatus.textContent = `目前正在編輯 ${editingRecord.date} 的習慣打卡資料。`;
+      todayReviewStatus.textContent = `目前正在編輯 ${editingRecord.date} 的每日復盤資料。`;
 
       const formCards = document.querySelectorAll(".form-card");
       const targetCard = formCards[1] || document.querySelector(".form-card");
@@ -1274,8 +1302,8 @@
         });
       }
 
-      showMessage(checkinMsg, `已載入 ${row.date} 的資料，可分別修改打卡與復盤。`);
-      showMessage(reviewMsg, `已載入 ${row.date} 的資料，可分別修改打卡與復盤。`);
+      showMessage(checkinMsg, `已載入 ${editingRecord.date} 的資料，可分別修改打卡與復盤。`);
+      showMessage(reviewMsg, `已載入 ${editingRecord.date} 的資料，可分別修改打卡與復盤。`);
     }
 
     function renderChallengeCalendar(rows) {
@@ -1391,7 +1419,7 @@
         return;
       }
 
-      const sorted = [...rows].sort((a, b) => a.date.localeCompare(b.date));
+      const sorted = [...rows].sort((a, b) => normalizeDateString(a.date).localeCompare(normalizeDateString(b.date)));
       const recent7 = sorted.slice(-7);
       const total = sorted.reduce((sum, item) => sum + item.total_score, 0);
       const rate = Math.round((total / (sorted.length * 10)) * 100);
@@ -1415,7 +1443,7 @@
       scoreChart = new Chart(scoreCtx, {
         type: "line",
         data: {
-          labels: recent7.map(item => item.date.slice(5)),
+          labels: recent7.map(item => normalizeDateString(item.date).slice(5)),
           datasets: [{
             label: "每日總分",
             data: recent7.map(item => item.total_score),
