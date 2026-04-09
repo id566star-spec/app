@@ -259,7 +259,7 @@
       display:block;
     }
 
-    input, textarea{
+    input{
       width:100%;
       border:none;
       outline:none;
@@ -271,13 +271,7 @@
       font-family:inherit;
     }
 
-    textarea{
-      min-height:92px;
-      resize:vertical;
-    }
-
-    input::placeholder,
-    textarea::placeholder{
+    input::placeholder{
       color:rgba(255,234,220,.68);
     }
 
@@ -323,24 +317,9 @@
       flex:0 0 24px;
     }
 
-    .sub-card{
-      background:rgba(255,255,255,.06);
-      border-radius:18px;
-      padding:14px;
-      margin-top:14px;
-      border:1px solid rgba(255,255,255,.08);
-    }
-
-    .sub-title{
-      font-size:18px;
-      margin-bottom:12px;
-      color:#fff0db;
-      text-align:center;
-    }
-
     .score-row{
       display:grid;
-      grid-template-columns:repeat(3,1fr);
+      grid-template-columns:1fr;
       gap:10px;
       margin-top:10px;
       margin-bottom:8px;
@@ -554,14 +533,6 @@
             <div class="score-label">打卡分數</div>
             <div class="score-value" id="habitScoreBox">0/7</div>
           </div>
-          <div class="score-box">
-            <div class="score-label">復盤分數</div>
-            <div class="score-value" id="reviewScoreBox">0/3</div>
-          </div>
-          <div class="score-box">
-            <div class="score-label">今日總分</div>
-            <div class="score-value" id="totalScoreBox">0/10</div>
-          </div>
         </div>
       </div>
 
@@ -575,36 +546,6 @@
         </div>
 
         <div class="msg" id="checkinMsg"></div>
-      </div>
-
-      <div class="form-card">
-        <div class="section-title">每日復盤</div>
-        <div id="todayReviewStatus" class="hint"></div>
-
-        <div class="sub-card">
-          <div class="sub-title">🌙 今日復盤</div>
-
-          <div class="field">
-            <label class="label" for="reviewGood">✅ 今天做得好的一件事</label>
-            <textarea id="reviewGood" placeholder="哪怕只是小事，也值得被看見 🌱"></textarea>
-          </div>
-
-          <div class="field">
-            <label class="label" for="reviewBad">❌ 今天可以更好的一件事</label>
-            <textarea id="reviewBad" placeholder="不批判自己，只是觀察 💛"></textarea>
-          </div>
-
-          <div class="field" style="margin-bottom:0;">
-            <label class="label" for="reviewBetter">💡 我可以怎麼想會更好？</label>
-            <textarea id="reviewBetter" placeholder="一個小小的改變就夠了 ✨"></textarea>
-          </div>
-        </div>
-
-        <div class="btns">
-          <button id="reviewBtn" type="button">送出每日復盤</button>
-        </div>
-
-        <div class="msg" id="reviewMsg"></div>
 
         <div class="btns">
           <button class="small-btn" id="refreshBtn" type="button">重新整理資料</button>
@@ -625,7 +566,7 @@
   </div>
 
   <script>
-    const API = "https://script.google.com/macros/s/AKfycbwao4LxZ28wddM2Hy3sA3cS63fNUKviOR7-IUoyyCjyEvW6ZF-s9GDs7oogIDAivyTr/exec";
+    const API = "https://script.google.com/macros/s/AKfycbxEkemmqCYVabIeNxtLpIYM9rt8DXSrlyiBm63uR-Se60WmIrXXCZnTN3_erGvF-Xxn/exec";
 
     const quotes = [
       "「相信過程，你已比昨天的自己更好了。」🌸",
@@ -674,20 +615,11 @@
 
     const habitsBox = document.getElementById("habitsBox");
     const todayHabitStatus = document.getElementById("todayHabitStatus");
-    const todayReviewStatus = document.getElementById("todayReviewStatus");
-
-    const reviewGood = document.getElementById("reviewGood");
-    const reviewBad = document.getElementById("reviewBad");
-    const reviewBetter = document.getElementById("reviewBetter");
 
     const habitScoreBox = document.getElementById("habitScoreBox");
-    const reviewScoreBox = document.getElementById("reviewScoreBox");
-    const totalScoreBox = document.getElementById("totalScoreBox");
 
     const checkinBtn = document.getElementById("checkinBtn");
-    const reviewBtn = document.getElementById("reviewBtn");
     const checkinMsg = document.getElementById("checkinMsg");
-    const reviewMsg = document.getElementById("reviewMsg");
     const logoutBtn = document.getElementById("logoutBtn");
     const refreshBtn = document.getElementById("refreshBtn");
 
@@ -816,27 +748,10 @@
       return (habits || []).filter(Boolean).length;
     }
 
-    function calculateReviewScore(good, bad, better) {
-      let score = 0;
-      if (String(good || "").trim()) score += 1;
-      if (String(bad || "").trim()) score += 1;
-      if (String(better || "").trim()) score += 1;
-      return score;
-    }
-
     function updateScoreBoxes(record = null) {
       const habits = record?.habits || getSelectedHabits();
-      const good = record ? record.review_good : reviewGood.value;
-      const bad = record ? record.review_bad : reviewBad.value;
-      const better = record ? record.review_better : reviewBetter.value;
-
       const hScore = calculateHabitScore(habits);
-      const rScore = calculateReviewScore(good, bad, better);
-      const total = hScore + rScore;
-
       habitScoreBox.textContent = `${hScore}/7`;
-      reviewScoreBox.textContent = `${rScore}/3`;
-      totalScoreBox.textContent = `${total}/10`;
     }
 
     function renderHabits(selected = []) {
@@ -872,7 +787,6 @@
       loginBtn.disabled = isLoading;
       registerBtn.disabled = isLoading;
       checkinBtn.disabled = isLoading;
-      reviewBtn.disabled = isLoading;
       refreshBtn.disabled = isLoading;
     }
 
@@ -921,12 +835,8 @@
         date: normalizeDateString(row[2]),
         habits: [row[3], row[4], row[5], row[6], row[7], row[8], row[9]].map(v => v === true || v === "TRUE" || v === "true"),
         habit_score: Number(row[10]) || 0,
-        review_good: String(row[11] || ""),
-        review_bad: String(row[12] || ""),
-        review_better: String(row[13] || ""),
-        review_score: Number(row[14]) || 0,
-        total_score: Number(row[15]) || 0,
-        created_at: row[16] || ""
+        total_score: Number(row[10]) || 0,
+        created_at: row[11] || ""
       }));
     }
 
@@ -977,17 +887,11 @@
 
     function fillFormWithRecord(record) {
       renderHabits(record?.habits || []);
-      reviewGood.value = record?.review_good || "";
-      reviewBad.value = record?.review_bad || "";
-      reviewBetter.value = record?.review_better || "";
       updateScoreBoxes(record);
     }
 
     function clearTodayForm() {
       renderHabits([]);
-      reviewGood.value = "";
-      reviewBad.value = "";
-      reviewBetter.value = "";
       updateScoreBoxes();
     }
 
@@ -996,32 +900,22 @@
 
       if (editingRecord) {
         const editingDate = normalizeDateString(editingRecord.date);
-        todayHabitStatus.textContent = `目前正在編輯 ${editingDate} 的習慣打卡資料。`;
-        todayReviewStatus.textContent = `目前正在編輯 ${editingDate} 的每日復盤資料。`;
+        todayHabitStatus.textContent = `目前正在編輯 ${editingDate} 的打卡資料。`;
         checkinBtn.disabled = false;
-        reviewBtn.disabled = false;
         return;
       }
 
       if (todayRecord && normalizeDateString(todayRecord.date) === today) {
         const habitDone = todayRecord.habit_score > 0;
-        const reviewDone = todayRecord.review_score > 0;
 
         todayHabitStatus.textContent = habitDone
-          ? `今天習慣打卡已送出，分數 ${todayRecord.habit_score}/7。可點上方今天卡片編輯。`
-          : "今天習慣打卡尚未送出。";
+          ? `今天打卡已送出，分數 ${todayRecord.habit_score}/7。可點上方今天卡片編輯。`
+          : "今天打卡尚未送出。";
 
-        todayReviewStatus.textContent = reviewDone
-          ? `今天每日復盤已送出，分數 ${todayRecord.review_score}/3。可點上方今天卡片編輯。`
-          : "今天每日復盤尚未送出。";
-
-        checkinBtn.disabled = habitDone;
-        reviewBtn.disabled = reviewDone;
-      } else {
-        todayHabitStatus.textContent = "今天還沒送出習慣打卡。";
-        todayReviewStatus.textContent = "今天還沒送出每日復盤。";
         checkinBtn.disabled = false;
-        reviewBtn.disabled = false;
+      } else {
+        todayHabitStatus.textContent = "今天還沒送出打卡。";
+        checkinBtn.disabled = false;
       }
     }
 
@@ -1147,20 +1041,15 @@
       const habits = getSelectedHabits();
       const habitScore = calculateHabitScore(habits);
 
-      if (!editingRecord && todayRecord && todayRecord.habit_score > 0) {
-        showMessage(checkinMsg, "今天的習慣打卡已送出，請點上方今天卡片編輯。", true);
-        return;
-      }
-
       setLoading(true);
-      showMessage(checkinMsg, "送出習慣打卡中...");
+      showMessage(checkinMsg, "送出打卡中...");
 
       try {
         const baseRecord = editingRecord || todayRecord;
 
         if (baseRecord) {
           const data = await postData({
-            action: "updateHabitOnly",
+            action: "updateCheckin",
             record_id: baseRecord.id,
             user_id: userId,
             date: normalizeDateString(baseRecord.date),
@@ -1168,7 +1057,7 @@
           });
 
           if (data.status === "success") {
-            showMessage(checkinMsg, `習慣打卡已更新，分數 ${habitScore}/7`);
+            showMessage(checkinMsg, `打卡已更新，分數 ${habitScore}/7`);
           } else {
             showMessage(checkinMsg, data.message || "更新失敗", true);
           }
@@ -1177,14 +1066,11 @@
             action: "checkin",
             user_id: userId,
             date: today,
-            habits: habits,
-            review_good: "",
-            review_bad: "",
-            review_better: ""
+            habits: habits
           });
 
           if (data.status === "success") {
-            showMessage(checkinMsg, `習慣打卡成功，分數 ${habitScore}/7`);
+            showMessage(checkinMsg, `打卡成功，分數 ${habitScore}/7`);
           } else {
             showMessage(checkinMsg, data.message || "送出失敗", true);
           }
@@ -1199,79 +1085,6 @@
       }
     }
 
-    async function submitReviewOnly() {
-      const userId = localStorage.getItem("user_id");
-      if (!userId) {
-        showMessage(reviewMsg, "請先登入", true);
-        return;
-      }
-
-      const today = getTodayStr();
-      const good = reviewGood.value.trim();
-      const bad = reviewBad.value.trim();
-      const better = reviewBetter.value.trim();
-      const reviewScore = calculateReviewScore(good, bad, better);
-
-      if (!editingRecord && todayRecord && todayRecord.review_score > 0) {
-        showMessage(reviewMsg, "今天的每日復盤已送出，請點上方今天卡片編輯。", true);
-        return;
-      }
-
-      if (reviewScore === 0) {
-        showMessage(reviewMsg, "請至少填寫一題再送出。", true);
-        return;
-      }
-
-      setLoading(true);
-      showMessage(reviewMsg, "送出每日復盤中...");
-
-      try {
-        const baseRecord = editingRecord || todayRecord;
-
-        if (baseRecord) {
-          const data = await postData({
-            action: "updateReviewOnly",
-            record_id: baseRecord.id,
-            user_id: userId,
-            date: normalizeDateString(baseRecord.date),
-            review_good: good,
-            review_bad: bad,
-            review_better: better
-          });
-
-          if (data.status === "success") {
-            showMessage(reviewMsg, `每日復盤已更新，分數 ${reviewScore}/3`);
-          } else {
-            showMessage(reviewMsg, data.message || "更新失敗", true);
-          }
-        } else {
-          const emptyHabits = [false,false,false,false,false,false,false];
-          const data = await postData({
-            action: "checkin",
-            user_id: userId,
-            date: today,
-            habits: emptyHabits,
-            review_good: good,
-            review_bad: bad,
-            review_better: better
-          });
-
-          if (data.status === "success") {
-            showMessage(reviewMsg, `每日復盤成功，分數 ${reviewScore}/3`);
-          } else {
-            showMessage(reviewMsg, data.message || "送出失敗", true);
-          }
-        }
-
-        editingRecord = null;
-        await refreshAllViews();
-      } catch (error) {
-        showMessage(reviewMsg, "送出失敗：" + error.message, true);
-      } finally {
-        setLoading(false);
-      }
-    }
-
     function loadRecordToForm(row) {
       editingRecord = {
         ...row,
@@ -1281,10 +1094,7 @@
       fillFormWithRecord(editingRecord);
 
       checkinBtn.disabled = false;
-      reviewBtn.disabled = false;
-
-      todayHabitStatus.textContent = `目前正在編輯 ${editingRecord.date} 的習慣打卡資料。`;
-      todayReviewStatus.textContent = `目前正在編輯 ${editingRecord.date} 的每日復盤資料。`;
+      todayHabitStatus.textContent = `目前正在編輯 ${editingRecord.date} 的打卡資料。`;
 
       const formCards = document.querySelectorAll(".form-card");
       const targetCard = formCards[1] || document.querySelector(".form-card");
@@ -1295,8 +1105,7 @@
         });
       }
 
-      showMessage(checkinMsg, `已載入 ${editingRecord.date} 的資料，可分別修改打卡與復盤。`);
-      showMessage(reviewMsg, `已載入 ${editingRecord.date} 的資料，可分別修改打卡與復盤。`);
+      showMessage(checkinMsg, `已載入 ${editingRecord.date} 的資料，可修改打卡。`);
     }
 
     function renderChallengeCalendar(rows) {
@@ -1332,19 +1141,19 @@
           classes.push("done", "clickable");
           if (isToday) classes.push("today");
           icon = "🌟";
-          sub = `${item.total_score}/10 分`;
-          meta = `${item.habit_score > 0 ? "打卡✅" : "打卡⬜"} ${item.review_score > 0 ? "復盤✅" : "復盤⬜"}`;
+          sub = `${item.habit_score}/7 分`;
+          meta = item.habit_score > 0 ? "已打卡 ✅" : "未打卡 ⬜";
           clickable = true;
         } else if (isToday) {
           classes.push("pending", "today");
           icon = "🫥";
           sub = "未完成";
-          meta = "打卡⬜ 復盤⬜";
+          meta = "未打卡 ⬜";
         } else if (isPast) {
           classes.push("pending");
           icon = "⭕";
           sub = "未完成";
-          meta = "打卡⬜ 復盤⬜";
+          meta = "未打卡 ⬜";
         } else if (isFuture) {
           classes.push("future");
           icon = "🔒";
@@ -1414,18 +1223,18 @@
 
       const sorted = [...rows].sort((a, b) => normalizeDateString(a.date).localeCompare(normalizeDateString(b.date)));
       const recent7 = sorted.slice(-7);
-      const total = sorted.reduce((sum, item) => sum + item.total_score, 0);
-      const rate = Math.round((total / (sorted.length * 10)) * 100);
+      const total = sorted.reduce((sum, item) => sum + item.habit_score, 0);
+      const rate = Math.round((total / (sorted.length * 7)) * 100);
 
       statsWrap.innerHTML = `
         <div class="chart-card">
           <div class="chart-title">累積達成率</div>
           <div style="text-align:center;font-size:30px;color:#fff0db;">${rate}%</div>
-          <div class="hint">共取得 ${total} / ${sorted.length * 10} 分</div>
+          <div class="hint">共取得 ${total} / ${sorted.length * 7} 分</div>
         </div>
 
         <div class="chart-card">
-          <div class="chart-title">近 7 天總分</div>
+          <div class="chart-title">近 7 天打卡分數</div>
           <canvas id="scoreChartCanvas"></canvas>
         </div>
       `;
@@ -1438,8 +1247,8 @@
         data: {
           labels: recent7.map(item => normalizeDateString(item.date).slice(5)),
           datasets: [{
-            label: "每日總分",
-            data: recent7.map(item => item.total_score),
+            label: "每日打卡分數",
+            data: recent7.map(item => item.habit_score),
             tension: 0.35,
             fill: false,
             borderColor: "#ffb07b",
@@ -1460,7 +1269,7 @@
             },
             y: {
               beginAtZero: true,
-              max: 10,
+              max: 7,
               ticks: { stepSize: 1, color: "#ffe3cf" },
               grid: { color: "rgba(255,255,255,0.08)" }
             }
@@ -1485,25 +1294,17 @@
       pinInput.value = "";
       showMessage(loginMsg, "已登出");
       showMessage(checkinMsg, "");
-      showMessage(reviewMsg, "");
     }
-
-    reviewGood.addEventListener("input", () => updateScoreBoxes());
-    reviewBad.addEventListener("input", () => updateScoreBoxes());
-    reviewBetter.addEventListener("input", () => updateScoreBoxes());
 
     loginBtn.addEventListener("click", loginUser);
     registerBtn.addEventListener("click", registerUser);
     checkinBtn.addEventListener("click", submitHabitCheckin);
-    reviewBtn.addEventListener("click", submitReviewOnly);
     logoutBtn.addEventListener("click", logout);
     refreshBtn.addEventListener("click", async () => {
       editingRecord = null;
       showMessage(checkinMsg, "資料重新整理中...");
-      showMessage(reviewMsg, "資料重新整理中...");
       await refreshAllViews();
       showMessage(checkinMsg, "資料已更新");
-      showMessage(reviewMsg, "資料已更新");
     });
 
     if (localStorage.getItem("user_id")) {
