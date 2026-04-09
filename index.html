@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>30天打卡身心靈成長競賽</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     * { box-sizing: border-box; }
 
@@ -94,7 +95,6 @@
       padding:16px 18px;
       margin-bottom:18px;
       box-shadow:var(--shadow);
-      position:relative;
       overflow:hidden;
     }
 
@@ -102,7 +102,7 @@
       text-align:center;
       font-size:16px;
       line-height:1.7;
-      padding:0 18px;
+      padding:0 10px;
     }
 
     .hero{
@@ -111,7 +111,6 @@
       border-radius:28px;
       padding:22px 18px 18px;
       box-shadow:var(--shadow);
-      position:relative;
       overflow:hidden;
       margin-bottom:18px;
     }
@@ -187,7 +186,7 @@
       background:linear-gradient(180deg, #242b34, #1d222b);
       border:1px solid rgba(255,255,255,.05);
       border-radius:16px;
-      min-height:104px;
+      min-height:110px;
       padding:10px 8px;
       display:flex;
       flex-direction:column;
@@ -201,6 +200,7 @@
 
     .day-tile.clickable{
       cursor:pointer;
+      pointer-events:auto;
     }
 
     .day-tile.clickable:hover{
@@ -225,6 +225,7 @@
 
     .day-tile.today{
       outline:2px solid rgba(255,173,112,.75);
+      outline-offset:0;
     }
 
     .tile-icon{
@@ -439,12 +440,55 @@
       line-height:1.6;
     }
 
+    .rank-list {
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .rank-item {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      background:rgba(255,255,255,0.07);
+      border-radius:14px;
+      padding:12px 14px;
+      border:1px solid rgba(255,255,255,0.06);
+    }
+
+    .rank-left {
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .rank-no {
+      width:30px;
+      height:30px;
+      border-radius:999px;
+      background:rgba(255,255,255,0.10);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:13px;
+    }
+
+    .rank-name {
+      font-size:15px;
+      color:#fff2e8;
+    }
+
+    .rank-score {
+      font-size:14px;
+      color:#ffd6bb;
+    }
+
     @media (max-width:380px){
       .challenge-grid{
         gap:10px;
       }
       .day-tile{
-        min-height:96px;
+        min-height:98px;
       }
       .hero .day-big{
         font-size:44px;
@@ -569,6 +613,11 @@
       </div>
 
       <div class="stats-card">
+        <div class="section-title">🏆 排行榜</div>
+        <div id="leaderboardWrap"></div>
+      </div>
+
+      <div class="stats-card">
         <div class="section-title">成果統計</div>
         <div id="statsWrap"></div>
       </div>
@@ -644,6 +693,7 @@
 
     const historyWrap = document.getElementById("historyWrap");
     const statsWrap = document.getElementById("statsWrap");
+    const leaderboardWrap = document.getElementById("leaderboardWrap");
 
     let scoreChart = null;
     let currentRows = [];
@@ -712,6 +762,7 @@
       }
 
       saved = normalizeDateString(saved);
+
       if (!/^\d{4}-\d{2}-\d{2}$/.test(saved)) {
         localStorage.setItem("challenge_start_date", today);
         return today;
@@ -728,7 +779,7 @@
 
       const sorted = rows
         .map(r => normalizeDateString(r.date))
-        .filter(Boolean)
+        .filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d))
         .sort((a, b) => a.localeCompare(b));
 
       if (!sorted.length) {
@@ -841,28 +892,19 @@
     }
 
     function normalizeHistoryRows(rows) {
-      return rows.map(row => {
-        const habits = [row[3], row[4], row[5], row[6], row[7], row[8], row[9]].map(v => v === true || v === "TRUE" || v === "true");
-        const habit_score = Number(row[10]) || 0;
-        const review_good = String(row[11] || "");
-        const review_bad = String(row[12] || "");
-        const review_better = String(row[13] || "");
-        const review_score = calculateReviewScore(review_good, review_bad, review_better);
-
-        return {
-          id: String(row[0] || "").trim(),
-          user_id: String(row[1] || "").trim(),
-          date: normalizeDateString(row[2]),
-          habits,
-          habit_score,
-          review_good,
-          review_bad,
-          review_better,
-          review_score,
-          total_score: habit_score + review_score,
-          created_at: row[14] || ""
-        };
-      });
+      return rows.map(row => ({
+        id: String(row[0] || "").trim(),
+        user_id: String(row[1] || "").trim(),
+        date: normalizeDateString(row[2]),
+        habits: [row[3], row[4], row[5], row[6], row[7], row[8], row[9]].map(v => v === true || v === "TRUE" || v === "true"),
+        habit_score: Number(row[10]) || 0,
+        review_good: String(row[11] || ""),
+        review_bad: String(row[12] || ""),
+        review_better: String(row[13] || ""),
+        review_score: Number(row[14]) || 0,
+        total_score: Number(row[15]) || 0,
+        created_at: row[16] || ""
+      }));
     }
 
     function updateHeaderUI() {
@@ -876,7 +918,7 @@
 
       const today = getTodayStr();
       const dateSet = new Set(
-        rows.map(r => normalizeDateString(r.date)).filter(Boolean)
+        rows.map(r => normalizeDateString(r.date)).filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d))
       );
 
       if (!dateSet.has(today)) return 0;
@@ -915,7 +957,7 @@
       reviewGood.value = record?.review_good || "";
       reviewBad.value = record?.review_bad || "";
       reviewBetter.value = record?.review_better || "";
-      updateScoreBoxes(record || null);
+      updateScoreBoxes(record);
     }
 
     function clearTodayForm() {
@@ -930,8 +972,8 @@
       const today = getTodayStr();
 
       if (editingRecord) {
-        todayHabitStatus.textContent = `目前正在編輯 ${editingRecord.date} 的資料。`;
-        todayReviewStatus.textContent = `目前正在編輯 ${editingRecord.date} 的資料。`;
+        todayHabitStatus.textContent = `目前正在編輯 ${editingRecord.date} 的習慣打卡資料。`;
+        todayReviewStatus.textContent = `目前正在編輯 ${editingRecord.date} 的每日復盤資料。`;
         checkinBtn.disabled = false;
         reviewBtn.disabled = false;
         return;
@@ -1034,6 +1076,14 @@
       return normalizeHistoryRows(data.data || []);
     }
 
+    async function fetchLeaderboard() {
+      const data = await postData({ action: "getLeaderboard" });
+      if (data.status !== "success") {
+        throw new Error(data.message || "取得排行榜失敗");
+      }
+      return data.data || [];
+    }
+
     async function refreshAllViews() {
       currentRows = await fetchHistoryData();
       setChallengeStartDateFromRows(currentRows);
@@ -1042,11 +1092,8 @@
       todayRecord = currentRows.find(r => normalizeDateString(r.date) === today) || null;
 
       if (!editingRecord) {
-        if (todayRecord) {
-          fillFormWithRecord(todayRecord);
-        } else {
-          clearTodayForm();
-        }
+        if (todayRecord) fillFormWithRecord(todayRecord);
+        else clearTodayForm();
       }
 
       updateHeaderUI();
@@ -1054,6 +1101,7 @@
       updateTodayStatus();
       renderChallengeCalendar(currentRows);
       renderStats(currentRows);
+      await renderLeaderboard();
     }
 
     async function enterMainPage() {
@@ -1084,7 +1132,7 @@
       showMessage(checkinMsg, "送出習慣打卡中...");
 
       try {
-        let baseRecord = editingRecord || todayRecord;
+        const baseRecord = editingRecord || todayRecord;
 
         if (baseRecord) {
           const data = await postData({
@@ -1157,7 +1205,7 @@
       showMessage(reviewMsg, "送出每日復盤中...");
 
       try {
-        let baseRecord = editingRecord || todayRecord;
+        const baseRecord = editingRecord || todayRecord;
 
         if (baseRecord) {
           const data = await postData({
@@ -1207,6 +1255,7 @@
     function loadRecordToForm(row) {
       editingRecord = row;
       fillFormWithRecord(row);
+
       checkinBtn.disabled = false;
       reviewBtn.disabled = false;
       todayHabitStatus.textContent = `目前正在編輯 ${row.date} 的習慣打卡資料。`;
@@ -1292,10 +1341,36 @@
           const dayNum = Number(tile.getAttribute("data-day"));
           const row = dayMap[dayNum];
           if (!row) return;
-
           loadRecordToForm(row);
         });
       });
+    }
+
+    async function renderLeaderboard() {
+      try {
+        const rows = await fetchLeaderboard();
+
+        if (!rows.length) {
+          leaderboardWrap.innerHTML = `<div class="msg">目前還沒有排行榜資料</div>`;
+          return;
+        }
+
+        leaderboardWrap.innerHTML = `
+          <div class="rank-list">
+            ${rows.map((item, index) => `
+              <div class="rank-item">
+                <div class="rank-left">
+                  <div class="rank-no">${index + 1}</div>
+                  <div class="rank-name">${item.nickname}</div>
+                </div>
+                <div class="rank-score">${item.totalScore} 分｜${item.days} 天</div>
+              </div>
+            `).join("")}
+          </div>
+        `;
+      } catch (error) {
+        leaderboardWrap.innerHTML = `<div class="msg">${error.message}</div>`;
+      }
     }
 
     function renderStats(rows) {
@@ -1374,6 +1449,7 @@
       clearTodayForm();
       historyWrap.innerHTML = "";
       statsWrap.innerHTML = "";
+      leaderboardWrap.innerHTML = "";
       mainPage.classList.add("hidden");
       loginPage.classList.remove("hidden");
       nicknameInput.value = "";
