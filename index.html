@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>30天打卡身心靈成長競賽</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     * { box-sizing: border-box; }
 
@@ -62,10 +61,6 @@
       flex:0 0 46px;
     }
 
-    .user-meta{
-      min-width:0;
-    }
-
     .user-meta .tiny{
       font-size:12px;
       color:#ffd4e8;
@@ -103,17 +98,6 @@
       overflow:hidden;
     }
 
-    .quote-card:before,
-    .quote-card:after{
-      content:"✦";
-      position:absolute;
-      color:rgba(255,255,255,.4);
-      font-size:14px;
-    }
-
-    .quote-card:before{ left:14px; top:10px; }
-    .quote-card:after{ right:16px; bottom:10px; }
-
     .quote-card .quote-text{
       text-align:center;
       font-size:16px;
@@ -131,15 +115,6 @@
       overflow:hidden;
       margin-bottom:18px;
     }
-
-    .hero .cloud{
-      position:absolute;
-      opacity:.22;
-      font-size:18px;
-    }
-
-    .hero .cloud.c1{ left:18px; top:16px; }
-    .hero .cloud.c2{ right:18px; bottom:16px; }
 
     .hero .day-big{
       text-align:center;
@@ -212,22 +187,20 @@
       background:linear-gradient(180deg, #242b34, #1d222b);
       border:1px solid rgba(255,255,255,.05);
       border-radius:16px;
-      min-height:94px;
+      min-height:104px;
       padding:10px 8px;
       display:flex;
       flex-direction:column;
       align-items:center;
       justify-content:center;
-      gap:6px;
+      gap:4px;
       text-align:center;
       color:#dfe6ee;
-      position:relative;
       transition:.2s ease;
     }
 
     .day-tile.clickable{
       cursor:pointer;
-      pointer-events:auto;
     }
 
     .day-tile.clickable:hover{
@@ -235,52 +208,10 @@
       border-color:rgba(255,255,255,.18);
     }
 
-    .day-tile .tile-icon{
-      font-size:22px;
-      line-height:1;
-    }
-
-    .day-tile .tile-title{
-      font-size:14px;
-      line-height:1.2;
-    }
-
-    .day-tile .tile-sub{
-      font-size:11px;
-      opacity:.9;
-      line-height:1.25;
-    }
-
     .day-tile.done{
       background:linear-gradient(180deg, rgba(164,0,64,.9), rgba(99,14,46,.92));
       border-color:rgba(255,80,150,.55);
-      box-shadow:inset 0 0 0 1px rgba(255,255,255,.05), 0 0 20px rgba(255,52,124,.15);
       color:#fff6fb;
-    }
-
-    .day-tile.done .tile-sub{
-      color:#ffd8ea;
-    }
-
-    .day-tile.pending .tile-sub{
-      color:#d7dee8;
-    }
-
-    .day-tile.future .tile-sub{
-      color:#9ea8b5;
-    }
-
-    .day-tile.today{
-      outline:2px solid rgba(255,173,112,.75);
-      outline-offset:0;
-    }
-
-    .day-tile.future{
-      color:#b4bcc6;
-    }
-
-    .day-tile.future .tile-icon{
-      opacity:.9;
     }
 
     .day-tile.pending{
@@ -288,26 +219,34 @@
       color:#d2dae3;
     }
 
-    .tile-dot{
-      width:8px;
-      height:8px;
-      border-radius:50%;
-      background:rgba(255,255,255,.22);
-      margin-top:2px;
+    .day-tile.future{
+      color:#b4bcc6;
     }
 
-    .day-tile.done .tile-dot{
-      background:#ffd0e7;
+    .day-tile.today{
+      outline:2px solid rgba(255,173,112,.75);
     }
 
-    .day-tile.unlock-animate {
-      animation: popUnlock 0.5s ease;
+    .tile-icon{
+      font-size:22px;
+      line-height:1;
     }
 
-    @keyframes popUnlock {
-      0% { transform: scale(0.92); box-shadow: 0 0 0 rgba(255,90,160,0); }
-      50% { transform: scale(1.06); box-shadow: 0 0 24px rgba(255,90,160,0.35); }
-      100% { transform: scale(1); box-shadow: 0 0 0 rgba(255,90,160,0); }
+    .tile-title{
+      font-size:14px;
+      line-height:1.2;
+    }
+
+    .tile-sub{
+      font-size:11px;
+      line-height:1.2;
+      opacity:.95;
+    }
+
+    .tile-meta{
+      font-size:10px;
+      line-height:1.2;
+      color:#ffd8ea;
     }
 
     .field{ margin-bottom:14px; }
@@ -376,11 +315,6 @@
       font-size:13px;
     }
 
-    .habit-text{
-      flex:1;
-      line-height:1.4;
-    }
-
     .habit-item input[type="checkbox"]{
       width:24px;
       height:24px;
@@ -403,6 +337,32 @@
       text-align:center;
     }
 
+    .score-row{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+      margin-top:10px;
+      margin-bottom:8px;
+    }
+
+    .score-box{
+      background:rgba(255,255,255,.08);
+      border-radius:14px;
+      padding:10px 8px;
+      text-align:center;
+    }
+
+    .score-label{
+      font-size:12px;
+      color:#ffd7bd;
+      margin-bottom:4px;
+    }
+
+    .score-value{
+      font-size:20px;
+      color:#fff6ee;
+    }
+
     .btns{
       display:flex;
       gap:10px;
@@ -418,10 +378,11 @@
       background:#b96539;
       color:#fff;
       border-radius:16px;
-      padding:13px 22px;
-      font-size:18px;
+      padding:13px 18px;
+      font-size:17px;
       font-family:inherit;
       box-shadow:0 6px 14px rgba(0,0,0,.16);
+      width:100%;
     }
 
     button:disabled{
@@ -434,6 +395,7 @@
       font-size:15px;
       padding:11px 18px;
       box-shadow:none;
+      width:auto;
     }
 
     .outline-btn{
@@ -441,6 +403,7 @@
       color:#ffd7bd;
       border:1px solid rgba(255,255,255,.18);
       box-shadow:none;
+      width:auto;
     }
 
     .msg{
@@ -476,106 +439,12 @@
       line-height:1.6;
     }
 
-    .review-box{
-      background:rgba(255,255,255,.08);
-      border-radius:14px;
-      padding:10px 12px;
-      margin-top:8px;
-      line-height:1.7;
-      color:#fff0e2;
-      font-size:14px;
-      word-break:break-word;
-    }
-
-    .badge-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-    }
-
-    .badge-card {
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 16px;
-      padding: 14px 8px;
-      text-align: center;
-      min-height: 110px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 6px;
-    }
-
-    .badge-card.unlocked {
-      background: linear-gradient(180deg, rgba(255,183,77,0.20), rgba(255,111,145,0.16));
-      border-color: rgba(255,195,120,0.45);
-      box-shadow: 0 0 20px rgba(255,183,77,0.12);
-    }
-
-    .badge-icon {
-      font-size: 28px;
-    }
-
-    .badge-title {
-      font-size: 14px;
-      color: #fff4ea;
-    }
-
-    .badge-desc {
-      font-size: 11px;
-      color: #ffd8c4;
-      line-height: 1.4;
-    }
-
-    .rank-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .rank-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: rgba(255,255,255,0.07);
-      border-radius: 14px;
-      padding: 12px 14px;
-      border: 1px solid rgba(255,255,255,0.06);
-    }
-
-    .rank-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .rank-no {
-      width: 30px;
-      height: 30px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.10);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 13px;
-    }
-
-    .rank-name {
-      font-size: 15px;
-      color: #fff2e8;
-    }
-
-    .rank-score {
-      font-size: 14px;
-      color: #ffd6bb;
-    }
-
     @media (max-width:380px){
       .challenge-grid{
         gap:10px;
       }
       .day-tile{
-        min-height:88px;
+        min-height:96px;
       }
       .hero .day-big{
         font-size:44px;
@@ -623,8 +492,6 @@
       </div>
 
       <div class="hero">
-        <div class="cloud c1">☁</div>
-        <div class="cloud c2">☁</div>
         <div class="day-big" id="heroDayBig">Day 1</div>
         <div class="day-sub" id="heroDaySub">第一天</div>
         <div class="date-sub" id="heroDateSub">2026年4月8日 星期三</div>
@@ -637,11 +504,38 @@
       </div>
 
       <div class="form-card">
-        <div class="section-title">今日打卡</div>
-        <div class="quote" id="helloText"></div>
-        <div id="todayStatusHint" class="hint"></div>
+        <div class="section-title">今日分數</div>
+        <div class="score-row">
+          <div class="score-box">
+            <div class="score-label">打卡分數</div>
+            <div class="score-value" id="habitScoreBox">0/7</div>
+          </div>
+          <div class="score-box">
+            <div class="score-label">復盤分數</div>
+            <div class="score-value" id="reviewScoreBox">0/3</div>
+          </div>
+          <div class="score-box">
+            <div class="score-label">今日總分</div>
+            <div class="score-value" id="totalScoreBox">0/10</div>
+          </div>
+        </div>
+      </div>
 
+      <div class="form-card">
+        <div class="section-title">今日打卡</div>
+        <div id="todayHabitStatus" class="hint"></div>
         <div id="habitsBox"></div>
+
+        <div class="btns">
+          <button id="checkinBtn" type="button">送出今日打卡</button>
+        </div>
+
+        <div class="msg" id="checkinMsg"></div>
+      </div>
+
+      <div class="form-card">
+        <div class="section-title">每日復盤</div>
+        <div id="todayReviewStatus" class="hint"></div>
 
         <div class="sub-card">
           <div class="sub-title">🌙 今日復盤</div>
@@ -663,25 +557,15 @@
         </div>
 
         <div class="btns">
-          <button id="checkinBtn" type="button">完成今日打卡</button>
+          <button id="reviewBtn" type="button">送出每日復盤</button>
         </div>
 
-        <div class="msg" id="checkinMsg"></div>
+        <div class="msg" id="reviewMsg"></div>
 
         <div class="btns">
           <button class="small-btn" id="refreshBtn" type="button">重新整理資料</button>
           <button class="small-btn outline-btn" id="logoutBtn" type="button">登出</button>
         </div>
-      </div>
-
-      <div class="stats-card">
-        <div class="section-title">🏅 我的徽章</div>
-        <div id="badgeWrap"></div>
-      </div>
-
-      <div class="stats-card">
-        <div class="section-title">🏆 排行榜</div>
-        <div id="leaderboardWrap"></div>
       </div>
 
       <div class="stats-card">
@@ -692,7 +576,7 @@
   </div>
 
   <script>
-    const API = "https://script.google.com/macros/s/AKfycbyixIIX2MEvntG6Z9Dy8RQAHs9sMEukOi-GDFL3t2oT7uFaCAvLjjW3dQpGHVqGjio/exec";
+    const API = "https://script.google.com/macros/s/AKfycbzNyAzJY2hHGOqzXQwCcr9--GEzsQblODB1hV6hpqQyQbRJVcdjVl4ZHDWB3FGRxGnm/exec";
 
     const quotes = [
       "「相信過程，你已比昨天的自己更好了。」🌸",
@@ -739,28 +623,31 @@
     const heroDaySub = document.getElementById("heroDaySub");
     const heroDateSub = document.getElementById("heroDateSub");
 
-    const helloText = document.getElementById("helloText");
     const habitsBox = document.getElementById("habitsBox");
-    const todayStatusHint = document.getElementById("todayStatusHint");
+    const todayHabitStatus = document.getElementById("todayHabitStatus");
+    const todayReviewStatus = document.getElementById("todayReviewStatus");
 
     const reviewGood = document.getElementById("reviewGood");
     const reviewBad = document.getElementById("reviewBad");
     const reviewBetter = document.getElementById("reviewBetter");
 
+    const habitScoreBox = document.getElementById("habitScoreBox");
+    const reviewScoreBox = document.getElementById("reviewScoreBox");
+    const totalScoreBox = document.getElementById("totalScoreBox");
+
     const checkinBtn = document.getElementById("checkinBtn");
+    const reviewBtn = document.getElementById("reviewBtn");
     const checkinMsg = document.getElementById("checkinMsg");
+    const reviewMsg = document.getElementById("reviewMsg");
     const logoutBtn = document.getElementById("logoutBtn");
     const refreshBtn = document.getElementById("refreshBtn");
 
     const historyWrap = document.getElementById("historyWrap");
     const statsWrap = document.getElementById("statsWrap");
-    const badgeWrap = document.getElementById("badgeWrap");
-    const leaderboardWrap = document.getElementById("leaderboardWrap");
 
     let scoreChart = null;
-    let habitChart = null;
     let currentRows = [];
-    let todayExistingRecord = null;
+    let todayRecord = null;
     let editingRecord = null;
 
     quoteText.textContent = quotes[Math.floor(Math.random() * quotes.length)];
@@ -777,18 +664,8 @@
       return `${y}-${m}-${d}`;
     }
 
-    function formatTaiwanDate(dateStr) {
-      const parts = normalizeDateString(dateStr).split("-");
-      const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
-      const week = ["日","一","二","三","四","五","六"];
-      return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 星期${week[d.getDay()]}`;
-    }
-
-    function numberToZh(num) {
-      const arr = ["零","一","二","三","四","五","六","七","八","九","十",
-        "十一","十二","十三","十四","十五","十六","十七","十八","十九","二十",
-        "二十一","二十二","二十三","二十四","二十五","二十六","二十七","二十八","二十九","三十"];
-      return arr[num] || String(num);
+    function getTodayStr() {
+      return formatDateToYMD(getTaipeiNow());
     }
 
     function normalizeDateString(raw) {
@@ -804,9 +681,25 @@
       return s;
     }
 
-    function getTodayStr() {
-      const tw = getTaipeiNow();
-      return formatDateToYMD(tw);
+    function formatTaiwanDate(dateStr) {
+      const parts = normalizeDateString(dateStr).split("-");
+      const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+      const week = ["日","一","二","三","四","五","六"];
+      return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 星期${week[d.getDay()]}`;
+    }
+
+    function numberToZh(num) {
+      const arr = ["零","一","二","三","四","五","六","七","八","九","十",
+        "十一","十二","十三","十四","十五","十六","十七","十八","十九","二十",
+        "二十一","二十二","二十三","二十四","二十五","二十六","二十七","二十八","二十九","三十"];
+      return arr[num] || String(num);
+    }
+
+    function diffDays(dateA, dateB) {
+      const a = new Date(normalizeDateString(dateA) + "T00:00:00");
+      const b = new Date(normalizeDateString(dateB) + "T00:00:00");
+      if (isNaN(a.getTime()) || isNaN(b.getTime())) return 0;
+      return Math.floor((b.getTime() - a.getTime()) / 86400000);
     }
 
     function getChallengeStartDate() {
@@ -819,7 +712,6 @@
       }
 
       saved = normalizeDateString(saved);
-
       if (!/^\d{4}-\d{2}-\d{2}$/.test(saved)) {
         localStorage.setItem("challenge_start_date", today);
         return today;
@@ -830,42 +722,48 @@
 
     function setChallengeStartDateFromRows(rows) {
       if (!rows || !rows.length) {
-        const today = getTodayStr();
-        localStorage.setItem("challenge_start_date", today);
+        localStorage.setItem("challenge_start_date", getTodayStr());
         return;
       }
 
       const sorted = rows
         .map(r => normalizeDateString(r.date))
-        .filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d))
+        .filter(Boolean)
         .sort((a, b) => a.localeCompare(b));
 
       if (!sorted.length) {
-        const today = getTodayStr();
-        localStorage.setItem("challenge_start_date", today);
+        localStorage.setItem("challenge_start_date", getTodayStr());
         return;
       }
 
       localStorage.setItem("challenge_start_date", sorted[0]);
     }
 
-    function diffDays(dateA, dateB) {
-      const aStr = normalizeDateString(dateA);
-      const bStr = normalizeDateString(dateB);
+    function calculateHabitScore(habits) {
+      return (habits || []).filter(Boolean).length;
+    }
 
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(aStr) || !/^\d{4}-\d{2}-\d{2}$/.test(bStr)) {
-        return 0;
-      }
+    function calculateReviewScore(good, bad, better) {
+      let score = 0;
+      if (String(good || "").trim()) score += 1;
+      if (String(bad || "").trim()) score += 1;
+      if (String(better || "").trim()) score += 1;
+      return score;
+    }
 
-      const a = new Date(aStr + "T00:00:00");
-      const b = new Date(bStr + "T00:00:00");
+    function updateScoreBoxes(record = null) {
+      const habits = record?.habits || getSelectedHabits();
+      const good = record ? record.review_good : reviewGood.value;
+      const bad = record ? record.review_bad : reviewBad.value;
+      const better = record ? record.review_better : reviewBetter.value;
 
-      if (isNaN(a.getTime()) || isNaN(b.getTime())) {
-        return 0;
-      }
+      const hScore = calculateHabitScore(habits);
+      const rScore = calculateReviewScore(good, bad, better);
+      const total = hScore + rScore;
 
-      const diff = b.getTime() - a.getTime();
-      return Math.floor(diff / 86400000);
+      habitScoreBox.textContent = `${hScore}/7`;
+      reviewScoreBox.textContent = `${rScore}/3`;
+      totalScoreBox.textContent = `${total}/10`;
     }
 
     function renderHabits(selected = []) {
@@ -876,12 +774,16 @@
         item.innerHTML = `
           <div class="habit-left">
             <div class="habit-badge">${index + 1}</div>
-            <div class="habit-text">${habit}</div>
+            <div>${habit}</div>
           </div>
           <input type="checkbox" id="habit_${index}" ${selected[index] ? "checked" : ""}>
         `;
         habitsBox.appendChild(item);
       });
+
+      for (let i = 0; i < habitList.length; i++) {
+        document.getElementById(`habit_${i}`).addEventListener("change", () => updateScoreBoxes());
+      }
     }
 
     function getSelectedHabits() {
@@ -896,6 +798,7 @@
       loginBtn.disabled = isLoading;
       registerBtn.disabled = isLoading;
       checkinBtn.disabled = isLoading;
+      reviewBtn.disabled = isLoading;
       refreshBtn.disabled = isLoading;
     }
 
@@ -924,9 +827,7 @@
     async function postData(data) {
       const res = await fetch(API, {
         method: "POST",
-        headers: {
-          "Content-Type": "text/plain;charset=utf-8"
-        },
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify(data)
       });
 
@@ -940,43 +841,45 @@
     }
 
     function normalizeHistoryRows(rows) {
-      return rows.map(row => ({
-        id: String(row[0] || "").trim(),
-        user_id: String(row[1] || "").trim(),
-        date: normalizeDateString(row[2]),
-        habits: [row[3], row[4], row[5], row[6], row[7], row[8], row[9]].map(v => {
-          return v === true || v === "TRUE" || v === "true";
-        }),
-        score: Number(row[10]) || 0,
-        review_good: String(row[11] || ""),
-        review_bad: String(row[12] || ""),
-        review_better: String(row[13] || ""),
-        created_at: row[14] || ""
-      }));
+      return rows.map(row => {
+        const habits = [row[3], row[4], row[5], row[6], row[7], row[8], row[9]].map(v => v === true || v === "TRUE" || v === "true");
+        const habit_score = Number(row[10]) || 0;
+        const review_good = String(row[11] || "");
+        const review_bad = String(row[12] || "");
+        const review_better = String(row[13] || "");
+        const review_score = calculateReviewScore(review_good, review_bad, review_better);
+
+        return {
+          id: String(row[0] || "").trim(),
+          user_id: String(row[1] || "").trim(),
+          date: normalizeDateString(row[2]),
+          habits,
+          habit_score,
+          review_good,
+          review_bad,
+          review_better,
+          review_score,
+          total_score: habit_score + review_score,
+          created_at: row[14] || ""
+        };
+      });
     }
 
     function updateHeaderUI() {
       const nickname = localStorage.getItem("nickname") || "你";
-      const firstChar = nickname.charAt(0) || "你";
-      avatarText.textContent = firstChar;
+      avatarText.textContent = nickname.charAt(0) || "你";
       userNameText.textContent = nickname;
-      helloText.textContent = `${nickname}，今天也一起變得更好 💐`;
     }
 
     function calculateStreak(rows) {
       if (!Array.isArray(rows) || rows.length === 0) return 0;
 
       const today = getTodayStr();
-
       const dateSet = new Set(
-        rows
-          .map(r => normalizeDateString(r.date))
-          .filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d))
+        rows.map(r => normalizeDateString(r.date)).filter(Boolean)
       );
 
-      if (!dateSet.has(today)) {
-        return 0;
-      }
+      if (!dateSet.has(today)) return 0;
 
       let streak = 1;
       let cursor = new Date(today + "T00:00:00");
@@ -984,12 +887,8 @@
       while (true) {
         cursor.setDate(cursor.getDate() - 1);
         const prev = formatDateToYMD(cursor);
-
-        if (dateSet.has(prev)) {
-          streak++;
-        } else {
-          break;
-        }
+        if (dateSet.has(prev)) streak++;
+        else break;
       }
 
       return streak;
@@ -1000,7 +899,6 @@
       const today = getTodayStr();
 
       let dayNum = diffDays(startDate, today) + 1;
-
       if (!Number.isFinite(dayNum) || dayNum < 1) dayNum = 1;
       if (dayNum > 30) dayNum = 30;
 
@@ -1009,7 +907,56 @@
       heroDateSub.textContent = formatTaiwanDate(today);
 
       const streak = calculateStreak(rows);
-      streakText.textContent = `🔥 ${dayNum}天連續`;
+      streakText.textContent = `🔥 ${streak}天連續`;
+    }
+
+    function fillFormWithRecord(record) {
+      renderHabits(record?.habits || []);
+      reviewGood.value = record?.review_good || "";
+      reviewBad.value = record?.review_bad || "";
+      reviewBetter.value = record?.review_better || "";
+      updateScoreBoxes(record || null);
+    }
+
+    function clearTodayForm() {
+      renderHabits([]);
+      reviewGood.value = "";
+      reviewBad.value = "";
+      reviewBetter.value = "";
+      updateScoreBoxes();
+    }
+
+    function updateTodayStatus() {
+      const today = getTodayStr();
+
+      if (editingRecord) {
+        todayHabitStatus.textContent = `目前正在編輯 ${editingRecord.date} 的資料。`;
+        todayReviewStatus.textContent = `目前正在編輯 ${editingRecord.date} 的資料。`;
+        checkinBtn.disabled = false;
+        reviewBtn.disabled = false;
+        return;
+      }
+
+      if (todayRecord && normalizeDateString(todayRecord.date) === today) {
+        const habitDone = todayRecord.habit_score > 0;
+        const reviewDone = todayRecord.review_score > 0;
+
+        todayHabitStatus.textContent = habitDone
+          ? `今天習慣打卡已送出，分數 ${todayRecord.habit_score}/7。可點上方今天卡片編輯。`
+          : "今天習慣打卡尚未送出。";
+
+        todayReviewStatus.textContent = reviewDone
+          ? `今天每日復盤已送出，分數 ${todayRecord.review_score}/3。可點上方今天卡片編輯。`
+          : "今天每日復盤尚未送出。";
+
+        checkinBtn.disabled = habitDone;
+        reviewBtn.disabled = reviewDone;
+      } else {
+        todayHabitStatus.textContent = "今天還沒送出習慣打卡。";
+        todayReviewStatus.textContent = "今天還沒送出每日復盤。";
+        checkinBtn.disabled = false;
+        reviewBtn.disabled = false;
+      }
     }
 
     async function registerUser() {
@@ -1087,56 +1034,16 @@
       return normalizeHistoryRows(data.data || []);
     }
 
-    async function fetchLeaderboard() {
-      const data = await postData({ action: "getLeaderboard" });
-      if (data.status !== "success") {
-        throw new Error(data.message || "取得排行榜失敗");
-      }
-      return data.data || [];
-    }
-
-    function fillFormWithRecord(record) {
-      renderHabits(record?.habits || []);
-      reviewGood.value = record?.review_good || "";
-      reviewBad.value = record?.review_bad || "";
-      reviewBetter.value = record?.review_better || "";
-    }
-
-    function clearTodayForm() {
-      renderHabits([]);
-      reviewGood.value = "";
-      reviewBad.value = "";
-      reviewBetter.value = "";
-    }
-
-    function updateTodayStatus() {
-      const today = getTodayStr();
-
-      if (editingRecord) {
-        todayStatusHint.textContent = `目前正在編輯 ${editingRecord.date} 的紀錄，修改後按「完成今日打卡」即可儲存。`;
-        checkinBtn.disabled = false;
-        return;
-      }
-
-      if (todayExistingRecord && normalizeDateString(todayExistingRecord.date) === today) {
-        todayStatusHint.textContent = `今天已經打卡完成，請到上方挑戰日曆點今天的 Day 卡片進行編輯。`;
-        checkinBtn.disabled = true;
-      } else {
-        todayStatusHint.textContent = "今天還沒打卡，完成後會立即顯示在挑戰日曆上。";
-        checkinBtn.disabled = false;
-      }
-    }
-
     async function refreshAllViews() {
       currentRows = await fetchHistoryData();
       setChallengeStartDateFromRows(currentRows);
 
       const today = getTodayStr();
-      todayExistingRecord = currentRows.find(r => normalizeDateString(r.date) === today) || null;
+      todayRecord = currentRows.find(r => normalizeDateString(r.date) === today) || null;
 
       if (!editingRecord) {
-        if (todayExistingRecord) {
-          fillFormWithRecord(todayExistingRecord);
+        if (todayRecord) {
+          fillFormWithRecord(todayRecord);
         } else {
           clearTodayForm();
         }
@@ -1147,8 +1054,6 @@
       updateTodayStatus();
       renderChallengeCalendar(currentRows);
       renderStats(currentRows);
-      renderBadges(currentRows);
-      await renderLeaderboard();
     }
 
     async function enterMainPage() {
@@ -1159,135 +1064,161 @@
       await refreshAllViews();
     }
 
-    async function createTodayCheckin() {
+    async function submitHabitCheckin() {
       const userId = localStorage.getItem("user_id");
       if (!userId) {
         showMessage(checkinMsg, "請先登入", true);
         return;
       }
 
-      if (todayExistingRecord) {
-        showMessage(checkinMsg, "今天已經打卡過了，請到挑戰日曆點今天進行編輯。", true);
+      const today = getTodayStr();
+      const habits = getSelectedHabits();
+      const habitScore = calculateHabitScore(habits);
+
+      if (!editingRecord && todayRecord && todayRecord.habit_score > 0) {
+        showMessage(checkinMsg, "今天的習慣打卡已送出，請點上方今天卡片編輯。", true);
         return;
       }
 
-      const habits = getSelectedHabits();
-
       setLoading(true);
-      showMessage(checkinMsg, "送出今日打卡中...");
+      showMessage(checkinMsg, "送出習慣打卡中...");
 
       try {
-        const data = await postData({
-          action: "checkin",
-          user_id: userId,
-          date: getTodayStr(),
-          habits: habits,
-          review_good: reviewGood.value.trim(),
-          review_bad: reviewBad.value.trim(),
-          review_better: reviewBetter.value.trim()
-        });
+        let baseRecord = editingRecord || todayRecord;
 
-        if (data.status === "success") {
-          showMessage(checkinMsg, `今日打卡成功，得分 ${data.score}/7 ✨`);
-          editingRecord = null;
+        if (baseRecord) {
+          const data = await postData({
+            action: "updateCheckin",
+            record_id: baseRecord.id,
+            user_id: userId,
+            date: baseRecord.date,
+            habits: habits,
+            review_good: reviewGood.value.trim(),
+            review_bad: reviewBad.value.trim(),
+            review_better: reviewBetter.value.trim()
+          });
 
-          currentRows = await fetchHistoryData();
-          setChallengeStartDateFromRows(currentRows);
-
-          const today = getTodayStr();
-          todayExistingRecord = currentRows.find(r => normalizeDateString(r.date) === today) || null;
-
-          updateHero(currentRows);
-          updateTodayStatus();
-          renderChallengeCalendar(currentRows);
-          renderStats(currentRows);
-          renderBadges(currentRows);
-          await renderLeaderboard();
-
-          if (todayExistingRecord) {
-            fillFormWithRecord(todayExistingRecord);
+          if (data.status === "success") {
+            showMessage(checkinMsg, `習慣打卡已更新，分數 ${habitScore}/7`);
+          } else {
+            showMessage(checkinMsg, data.message || "更新失敗", true);
           }
-
-          setTimeout(() => {
-            const startDate = getChallengeStartDate();
-            const today2 = getTodayStr();
-            const dayNum = diffDays(startDate, today2) + 1;
-            const tile = historyWrap.querySelector(`[data-day="${dayNum}"]`);
-            if (tile) {
-              tile.classList.add("unlock-animate");
-              setTimeout(() => tile.classList.remove("unlock-animate"), 600);
-            }
-          }, 80);
-
         } else {
-          showMessage(checkinMsg, data.message || "打卡失敗", true);
+          const data = await postData({
+            action: "checkin",
+            user_id: userId,
+            date: today,
+            habits: habits,
+            review_good: "",
+            review_bad: "",
+            review_better: ""
+          });
+
+          if (data.status === "success") {
+            showMessage(checkinMsg, `習慣打卡成功，分數 ${habitScore}/7`);
+          } else {
+            showMessage(checkinMsg, data.message || "送出失敗", true);
+          }
         }
+
+        editingRecord = null;
+        await refreshAllViews();
       } catch (error) {
-        showMessage(checkinMsg, "打卡失敗：" + error.message, true);
+        showMessage(checkinMsg, "送出失敗：" + error.message, true);
       } finally {
         setLoading(false);
       }
     }
 
-    async function updateCheckin(recordId, dateStr) {
+    async function submitReviewOnly() {
       const userId = localStorage.getItem("user_id");
       if (!userId) {
-        showMessage(checkinMsg, "請先登入", true);
+        showMessage(reviewMsg, "請先登入", true);
         return;
       }
 
-      const habits = getSelectedHabits();
+      const today = getTodayStr();
+      const good = reviewGood.value.trim();
+      const bad = reviewBad.value.trim();
+      const better = reviewBetter.value.trim();
+      const reviewScore = calculateReviewScore(good, bad, better);
+
+      if (!editingRecord && todayRecord && todayRecord.review_score > 0) {
+        showMessage(reviewMsg, "今天的每日復盤已送出，請點上方今天卡片編輯。", true);
+        return;
+      }
+
+      if (reviewScore === 0) {
+        showMessage(reviewMsg, "請至少填寫一題再送出。", true);
+        return;
+      }
 
       setLoading(true);
-      showMessage(checkinMsg, "更新紀錄中...");
+      showMessage(reviewMsg, "送出每日復盤中...");
 
       try {
-        const data = await postData({
-          action: "updateCheckin",
-          record_id: recordId,
-          user_id: userId,
-          date: dateStr,
-          habits: habits,
-          review_good: reviewGood.value.trim(),
-          review_bad: reviewBad.value.trim(),
-          review_better: reviewBetter.value.trim()
-        });
+        let baseRecord = editingRecord || todayRecord;
 
-        if (data.status === "success") {
-          showMessage(checkinMsg, `已更新 ${dateStr} 的打卡紀錄，得分 ${data.score}/7`);
-          editingRecord = null;
-          await refreshAllViews();
+        if (baseRecord) {
+          const data = await postData({
+            action: "updateCheckin",
+            record_id: baseRecord.id,
+            user_id: userId,
+            date: baseRecord.date,
+            habits: baseRecord.habits || getSelectedHabits(),
+            review_good: good,
+            review_bad: bad,
+            review_better: better
+          });
+
+          if (data.status === "success") {
+            showMessage(reviewMsg, `每日復盤已更新，分數 ${reviewScore}/3`);
+          } else {
+            showMessage(reviewMsg, data.message || "更新失敗", true);
+          }
         } else {
-          showMessage(checkinMsg, data.message || "更新失敗", true);
+          const emptyHabits = [false,false,false,false,false,false,false];
+          const data = await postData({
+            action: "checkin",
+            user_id: userId,
+            date: today,
+            habits: emptyHabits,
+            review_good: good,
+            review_bad: bad,
+            review_better: better
+          });
+
+          if (data.status === "success") {
+            showMessage(reviewMsg, `每日復盤成功，分數 ${reviewScore}/3`);
+          } else {
+            showMessage(reviewMsg, data.message || "送出失敗", true);
+          }
         }
+
+        editingRecord = null;
+        await refreshAllViews();
       } catch (error) {
-        showMessage(checkinMsg, "更新失敗：" + error.message, true);
+        showMessage(reviewMsg, "送出失敗：" + error.message, true);
       } finally {
         setLoading(false);
-      }
-    }
-
-    async function handleCheckinSubmit() {
-      if (editingRecord) {
-        await updateCheckin(editingRecord.id, editingRecord.date);
-      } else {
-        await createTodayCheckin();
       }
     }
 
     function loadRecordToForm(row) {
       editingRecord = row;
       fillFormWithRecord(row);
-
       checkinBtn.disabled = false;
-      todayStatusHint.textContent = `目前正在編輯 ${row.date} 的紀錄，修改後按「完成今日打卡」即可儲存。`;
+      reviewBtn.disabled = false;
+      todayHabitStatus.textContent = `目前正在編輯 ${row.date} 的習慣打卡資料。`;
+      todayReviewStatus.textContent = `目前正在編輯 ${row.date} 的每日復盤資料。`;
 
       window.scrollTo({
         top: document.querySelector(".form-card").offsetTop - 10,
         behavior: "smooth"
       });
 
-      showMessage(checkinMsg, `已載入 ${row.date} 的舊紀錄，可以直接修改。`);
+      showMessage(checkinMsg, `已載入 ${row.date} 的資料，可分別修改打卡與復盤。`);
+      showMessage(reviewMsg, `已載入 ${row.date} 的資料，可分別修改打卡與復盤。`);
     }
 
     function renderChallengeCalendar(rows) {
@@ -1301,10 +1232,7 @@
         const dayIndex = diffDays(startDate, normalizedDate) + 1;
 
         if (dayIndex >= 1 && dayIndex <= 30) {
-          dayMap[dayIndex] = {
-            ...item,
-            date: normalizedDate
-          };
+          dayMap[dayIndex] = { ...item, date: normalizedDate };
         }
       });
 
@@ -1319,26 +1247,31 @@
         let classes = ["day-tile"];
         let icon = "🔒";
         let sub = `Day${i}`;
+        let meta = "";
         let clickable = false;
 
         if (item) {
           classes.push("done");
           if (isToday) classes.push("today");
           icon = "🌟";
-          sub = `已打卡 ${item.score}/7`;
+          sub = `${item.total_score}/10 分`;
+          meta = `${item.habit_score > 0 ? "打卡✅" : "打卡⬜"} ${item.review_score > 0 ? "復盤✅" : "復盤⬜"}`;
           clickable = true;
         } else if (isToday) {
           classes.push("pending", "today");
           icon = "🫥";
-          sub = "未打卡";
+          sub = "未完成";
+          meta = "打卡⬜ 復盤⬜";
         } else if (isPast) {
           classes.push("pending");
           icon = "⭕";
           sub = "未完成";
+          meta = "打卡⬜ 復盤⬜";
         } else if (isFuture) {
           classes.push("future");
           icon = "🔒";
           sub = "未解鎖";
+          meta = "";
         }
 
         html += `
@@ -1346,7 +1279,7 @@
             <div class="tile-icon">${icon}</div>
             <div class="tile-title">Day${i}</div>
             <div class="tile-sub">${sub}</div>
-            <div class="tile-dot"></div>
+            <div class="tile-meta">${meta}</div>
           </div>
         `;
       }
@@ -1361,71 +1294,8 @@
           if (!row) return;
 
           loadRecordToForm(row);
-
-          showMessage(
-            checkinMsg,
-            `已載入 Day${dayNum}（${row.date}）的紀錄，現在可以直接修改後按「完成今日打卡」。`
-          );
         });
       });
-    }
-
-    function getBadges(rows) {
-      const totalDays = rows.length;
-      const totalScore = rows.reduce((sum, r) => sum + (Number(r.score) || 0), 0);
-      const streak = calculateStreak(rows);
-
-      return [
-        { icon:"🌱", title:"啟程徽章", desc:"完成第 1 次打卡", unlocked: totalDays >= 1 },
-        { icon:"🔥", title:"連續 3 天", desc:"持續打卡 3 天", unlocked: streak >= 3 },
-        { icon:"🌟", title:"連續 7 天", desc:"持續打卡 7 天", unlocked: streak >= 7 },
-        { icon:"💪", title:"穩定前進", desc:"累積 10 次打卡", unlocked: totalDays >= 10 },
-        { icon:"🏅", title:"高分行動派", desc:"總分達到 50 分", unlocked: totalScore >= 50 },
-        { icon:"👑", title:"30天勇者", desc:"累積 30 次打卡", unlocked: totalDays >= 30 }
-      ];
-    }
-
-    function renderBadges(rows) {
-      const badges = getBadges(rows);
-
-      badgeWrap.innerHTML = `
-        <div class="badge-grid">
-          ${badges.map(b => `
-            <div class="badge-card ${b.unlocked ? "unlocked" : ""}">
-              <div class="badge-icon">${b.unlocked ? b.icon : "🔒"}</div>
-              <div class="badge-title">${b.title}</div>
-              <div class="badge-desc">${b.desc}</div>
-            </div>
-          `).join("")}
-        </div>
-      `;
-    }
-
-    async function renderLeaderboard() {
-      try {
-        const rows = await fetchLeaderboard();
-
-        if (!rows.length) {
-          leaderboardWrap.innerHTML = `<div class="msg">目前還沒有排行榜資料</div>`;
-          return;
-        }
-
-        leaderboardWrap.innerHTML = `
-          <div class="rank-list">
-            ${rows.map((item, index) => `
-              <div class="rank-item">
-                <div class="rank-left">
-                  <div class="rank-no">${index + 1}</div>
-                  <div class="rank-name">${item.nickname}</div>
-                </div>
-                <div class="rank-score">${item.totalScore} 分｜${item.days} 天</div>
-              </div>
-            `).join("")}
-          </div>
-        `;
-      } catch (error) {
-        leaderboardWrap.innerHTML = `<div class="msg">${error.message}</div>`;
-      }
     }
 
     function renderStats(rows) {
@@ -1435,58 +1305,37 @@
           scoreChart.destroy();
           scoreChart = null;
         }
-        if (habitChart) {
-          habitChart.destroy();
-          habitChart = null;
-        }
         return;
       }
 
       const sorted = [...rows].sort((a, b) => a.date.localeCompare(b.date));
       const recent7 = sorted.slice(-7);
-
-      const habitTotals = Array(7).fill(0);
-      sorted.forEach(item => {
-        item.habits.forEach((done, i) => {
-          if (done) habitTotals[i]++;
-        });
-      });
-
-      const totalPossible = sorted.length * 7;
-      const totalDone = sorted.reduce((sum, item) => sum + item.score, 0);
-      const rate = totalPossible ? Math.round((totalDone / totalPossible) * 100) : 0;
+      const total = sorted.reduce((sum, item) => sum + item.total_score, 0);
+      const rate = Math.round((total / (sorted.length * 10)) * 100);
 
       statsWrap.innerHTML = `
         <div class="chart-card">
           <div class="chart-title">累積達成率</div>
           <div style="text-align:center;font-size:30px;color:#fff0db;">${rate}%</div>
-          <div class="hint">共完成 ${totalDone} / ${totalPossible} 次習慣</div>
+          <div class="hint">共取得 ${total} / ${sorted.length * 10} 分</div>
         </div>
 
         <div class="chart-card">
-          <div class="chart-title">近 7 次打卡分數</div>
+          <div class="chart-title">近 7 天總分</div>
           <canvas id="scoreChartCanvas"></canvas>
-        </div>
-
-        <div class="chart-card">
-          <div class="chart-title">7 個習慣累積完成次數</div>
-          <canvas id="habitChartCanvas"></canvas>
         </div>
       `;
 
       const scoreCtx = document.getElementById("scoreChartCanvas");
-      const habitCtx = document.getElementById("habitChartCanvas");
-
       if (scoreChart) scoreChart.destroy();
-      if (habitChart) habitChart.destroy();
 
       scoreChart = new Chart(scoreCtx, {
         type: "line",
         data: {
           labels: recent7.map(item => item.date.slice(5)),
           datasets: [{
-            label: "每日分數",
-            data: recent7.map(item => item.score),
+            label: "每日總分",
+            data: recent7.map(item => item.total_score),
             tension: 0.35,
             fill: false,
             borderColor: "#ffb07b",
@@ -1507,49 +1356,8 @@
             },
             y: {
               beginAtZero: true,
-              max: 7,
+              max: 10,
               ticks: { stepSize: 1, color: "#ffe3cf" },
-              grid: { color: "rgba(255,255,255,0.08)" }
-            }
-          }
-        }
-      });
-
-      habitChart = new Chart(habitCtx, {
-        type: "bar",
-        data: {
-          labels: habitList.map((item, i) => `${i + 1}`),
-          datasets: [{
-            label: "完成次數",
-            data: habitTotals,
-            backgroundColor: "rgba(255, 176, 123, 0.7)",
-            borderColor: "#ffb07b",
-            borderWidth: 1
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              labels: { color: "#fff0db" }
-            },
-            tooltip: {
-              callbacks: {
-                title: function(context) {
-                  const idx = context[0].dataIndex;
-                  return `${idx + 1}. ${habitList[idx]}`;
-                }
-              }
-            }
-          },
-          scales: {
-            x: {
-              ticks: { color: "#ffe3cf" },
-              grid: { color: "rgba(255,255,255,0.05)" }
-            },
-            y: {
-              beginAtZero: true,
-              ticks: { color: "#ffe3cf" },
               grid: { color: "rgba(255,255,255,0.08)" }
             }
           }
@@ -1561,36 +1369,43 @@
       localStorage.removeItem("user_id");
       localStorage.removeItem("nickname");
       currentRows = [];
-      todayExistingRecord = null;
+      todayRecord = null;
       editingRecord = null;
       clearTodayForm();
       historyWrap.innerHTML = "";
       statsWrap.innerHTML = "";
-      badgeWrap.innerHTML = "";
-      leaderboardWrap.innerHTML = "";
       mainPage.classList.add("hidden");
       loginPage.classList.remove("hidden");
       nicknameInput.value = "";
       pinInput.value = "";
       showMessage(loginMsg, "已登出");
       showMessage(checkinMsg, "");
+      showMessage(reviewMsg, "");
     }
+
+    reviewGood.addEventListener("input", () => updateScoreBoxes());
+    reviewBad.addEventListener("input", () => updateScoreBoxes());
+    reviewBetter.addEventListener("input", () => updateScoreBoxes());
 
     loginBtn.addEventListener("click", loginUser);
     registerBtn.addEventListener("click", registerUser);
-    checkinBtn.addEventListener("click", handleCheckinSubmit);
+    checkinBtn.addEventListener("click", submitHabitCheckin);
+    reviewBtn.addEventListener("click", submitReviewOnly);
     logoutBtn.addEventListener("click", logout);
     refreshBtn.addEventListener("click", async () => {
       editingRecord = null;
       showMessage(checkinMsg, "資料重新整理中...");
+      showMessage(reviewMsg, "資料重新整理中...");
       await refreshAllViews();
       showMessage(checkinMsg, "資料已更新");
+      showMessage(reviewMsg, "資料已更新");
     });
 
     if (localStorage.getItem("user_id")) {
       enterMainPage();
     } else {
       renderHabits([]);
+      updateScoreBoxes();
     }
   </script>
 </body>
