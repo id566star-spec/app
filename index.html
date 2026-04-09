@@ -625,7 +625,7 @@
   </div>
 
   <script>
-    const API = "https://script.google.com/macros/s/AKfycbzNyAzJY2hHGOqzXQwCcr9--GEzsQblODB1hV6hpqQyQbRJVcdjVl4ZHDWB3FGRxGnm/exec";
+    const API = "https://script.google.com/macros/s/AKfycbzHormlgobgPEv8ltExWctbY3pEr-GWJTMblPnNP9GB_g2D7zkeRQPx3wnD__jJ8-3n/exec";
 
     const quotes = [
       "「相信過程，你已比昨天的自己更好了。」🌸",
@@ -972,10 +972,18 @@
       const today = getTodayStr();
 
       if (editingRecord) {
+        const isEditingToday = normalizeDateString(editingRecord.date) === today;
+
         todayHabitStatus.textContent = `目前正在編輯 ${editingRecord.date} 的習慣打卡資料。`;
         todayReviewStatus.textContent = `目前正在編輯 ${editingRecord.date} 的每日復盤資料。`;
-        checkinBtn.disabled = false;
-        reviewBtn.disabled = false;
+
+        if (isEditingToday) {
+          checkinBtn.disabled = false;
+          reviewBtn.disabled = false;
+        } else {
+          checkinBtn.disabled = false;
+          reviewBtn.disabled = false;
+        }
         return;
       }
 
@@ -1136,14 +1144,11 @@
 
         if (baseRecord) {
           const data = await postData({
-            action: "updateCheckin",
+            action: "updateHabitOnly",
             record_id: baseRecord.id,
             user_id: userId,
             date: baseRecord.date,
-            habits: habits,
-            review_good: reviewGood.value.trim(),
-            review_bad: reviewBad.value.trim(),
-            review_better: reviewBetter.value.trim()
+            habits: habits
           });
 
           if (data.status === "success") {
@@ -1209,11 +1214,10 @@
 
         if (baseRecord) {
           const data = await postData({
-            action: "updateCheckin",
+            action: "updateReviewOnly",
             record_id: baseRecord.id,
             user_id: userId,
             date: baseRecord.date,
-            habits: baseRecord.habits || getSelectedHabits(),
             review_good: good,
             review_bad: bad,
             review_better: better
@@ -1261,10 +1265,14 @@
       todayHabitStatus.textContent = `目前正在編輯 ${row.date} 的習慣打卡資料。`;
       todayReviewStatus.textContent = `目前正在編輯 ${row.date} 的每日復盤資料。`;
 
-      window.scrollTo({
-        top: document.querySelector(".form-card").offsetTop - 10,
-        behavior: "smooth"
-      });
+      const formCards = document.querySelectorAll(".form-card");
+      const targetCard = formCards[1] || document.querySelector(".form-card");
+      if (targetCard) {
+        window.scrollTo({
+          top: targetCard.offsetTop - 10,
+          behavior: "smooth"
+        });
+      }
 
       showMessage(checkinMsg, `已載入 ${row.date} 的資料，可分別修改打卡與復盤。`);
       showMessage(reviewMsg, `已載入 ${row.date} 的資料，可分別修改打卡與復盤。`);
@@ -1300,7 +1308,7 @@
         let clickable = false;
 
         if (item) {
-          classes.push("done");
+          classes.push("done", "clickable");
           if (isToday) classes.push("today");
           icon = "🌟";
           sub = `${item.total_score}/10 分`;
