@@ -625,7 +625,7 @@
   </div>
 
   <script>
-    const API = "https://script.google.com/macros/s/AKfycbxmLMOw7WrSJ8BXed3KCOsyvewY8gUeQ6TccOHZMothpTc4R59WTGpyI4XPO_1zc4YH/exec";
+    const API = "https://script.google.com/macros/s/AKfycbwao4LxZ28wddM2Hy3sA3cS63fNUKviOR7-IUoyyCjyEvW6ZF-s9GDs7oogIDAivyTr/exec";
 
     const quotes = [
       "「相信過程，你已比昨天的自己更好了。」🌸",
@@ -730,25 +730,18 @@
 
       if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
 
-      const isoMatch = s.match(/^(\d{4})-(\d{2})-(\d{2})T/);
-      if (isoMatch) {
-        return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
-      }
-
-      const slashOrDash = s.replace(/\//g, "-");
-      const simpleMatch = slashOrDash.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
-      if (simpleMatch) {
-        const y = simpleMatch[1];
-        const m = String(simpleMatch[2]).padStart(2, "0");
-        const d = String(simpleMatch[3]).padStart(2, "0");
-        return `${y}-${m}-${d}`;
-      }
-
       const parsed = new Date(s);
       if (!isNaN(parsed.getTime())) {
-        const y = parsed.getUTCFullYear();
-        const m = String(parsed.getUTCMonth() + 1).padStart(2, "0");
-        const d = String(parsed.getUTCDate()).padStart(2, "0");
+        const taipeiDate = new Date(parsed.toLocaleString("en-US", { timeZone: "Asia/Taipei" }));
+        return formatDateToYMD(taipeiDate);
+      }
+
+      const normalized = s.replace(/\//g, "-");
+      const match = normalized.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+      if (match) {
+        const y = match[1];
+        const m = String(match[2]).padStart(2, "0");
+        const d = String(match[3]).padStart(2, "0");
         return `${y}-${m}-${d}`;
       }
 
